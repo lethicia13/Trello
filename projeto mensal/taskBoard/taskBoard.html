@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TaskBoard</title>
+    <link rel="stylesheet" href="./styles/global.css" />
+  </head>
+  <body>
+      <header>
+        <div class="dropdown">
+          <button type="button" class="dropbtn">Board Kanban</button>
+          <div class="dropdown-content"></div>
+        </div>
+        <div class="info-logout-darkmode">
+          <p>Olá, fulana</p>
+          <a href="#">Logout</a>
+          <label class="switch">
+            <input type="checkbox" />
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </header>
+      <main>
+      <section class="columns">
+        <section class="column">
+          <h2 class="column__title">To do</h2>
+          <button class="add-card-btn">+</button>
+          <section class="column__cards"></section>
+        </section>
+        <section class="column">
+          <h2 class="column__title">Doing</h2>
+          <button class="add-card-btn">+</button>
+          <section class="column__cards"></section>
+        </section>
+        <section class="column">
+          <h2 class="column__title">Review</h2>
+          <button class="add-card-btn">+</button>
+          <section class="column__cards"></section>
+        </section>
+        <section class="column">
+          <h2 class="column__title">Done</h2>
+          <button class="add-card-btn">+</button>
+          <section class="column__cards"></section>
+        </section>
+      </section>
+      <section class="add-column">
+        <input
+          id="new-column-title"
+          type="text"
+          placeholder="Digite o título da nova coluna"
+          aria-label="Título da nova coluna"
+        />
+        <button id="add-column-btn" class="add-card-btn">+</button>
+      </section>
+    </main>
+    <script type="module" src="./scripts/pages/taskBoard.js"></script>
+  </body>
+</html>
