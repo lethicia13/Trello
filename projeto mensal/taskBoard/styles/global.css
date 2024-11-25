@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
 
 * {
   margin: 0;
@@ -183,6 +184,11 @@ header {
   border-radius: 5px;
 }
 
+.add-column{
+  display: flex;
+  flex-direction: row;
+}
+
 .add-column-btn{
   background-color: #455763;
   border-radius: 5px;
@@ -190,9 +196,10 @@ header {
   padding: 2px;
 }
 
-img {
+i{
   width: 8%;
   cursor: pointer;
+  color:#455763;
 }
 
 .excluir {
@@ -233,15 +240,15 @@ header.dark{
   color: #D6C9B4;
 }
 
-#column1.dark, #column2.dark, #column3.dark, #column4.dark{
+#column1.dark, #column2.dark, #column3.dark, #column4.dark, .column.dark{
   background-color:#374a57;
 }
 
-#todo.dark, #doing.dark, #review.dark, #done.dark{
+#todo.dark, #doing.dark, #review.dark, #done.dark, .column__title.dark{
   color:#D6C9B4;
 }
 
-#novatarefa1.dark, #novatarefa2.dark, #novatarefa3.dark, #novatarefa4.dark, #add-column-btn.dark{
+#novatarefa1.dark, #novatarefa2.dark, #novatarefa3.dark, #novatarefa4.dark, #add-column-btn.dark, .add-card-btn.dark{
 background-color:#D6C9B4;
 color: #273a48;
 }
@@ -249,4 +256,27 @@ color: #273a48;
 #new-column-title.dark{
 background-color: #D6C9B4;
 color: #273a48;
+}
+
+/* mudança do card */
+.card-container {
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+}
+
+.card {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.card-wrapper {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+#trash1.dark, #trash2.dark, #trash3.dark, #trash4.dark, .bi-trash3-fill.dark, .excluir.dark{
+  color: #D6C9B4;
 }

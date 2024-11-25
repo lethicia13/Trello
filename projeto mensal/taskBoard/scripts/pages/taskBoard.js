@@ -20,33 +20,45 @@ let novatarefa3 = document.getElementById("novatarefa3");
 let novatarefa4 = document.getElementById("novatarefa4");
 let tituloColunaNova = document.getElementById("new-column-title");
 let botaoColuna = document.getElementById("add-column-btn");
-
-trilho.addEventListener("click", () => {
-    trilho.classList.toggle("dark");
-    body.classList.toggle("dark");
-    header.classList.toggle("dark");
-    dropdown.classList.toggle("dark");
-    info.classList.toggle("dark");
-    column1.classList.toggle("dark");
-    column2.classList.toggle("dark");
-    column3.classList.toggle("dark");
-    column4.classList.toggle("dark");
-    todo.classList.toggle("dark");
-    doing.classList.toggle("dark");
-    review.classList.toggle("dark");
-    done.classList.toggle("dark");
-    novatarefa1.classList.toggle("dark");
-    novatarefa2.classList.toggle("dark");
-    novatarefa3.classList.toggle("dark");
-    novatarefa4.classList.toggle("dark");
-    tituloColunaNova.classList.toggle("dark");
-    botaoColuna.classList.toggle("dark");
-});
+let botaoExcluir1 = document.getElementById("trash1");
+let botaoExcluir2 = document.getElementById("trash2");
+let botaoExcluir3 = document.getElementById("trash3");
+let botaoExcluir4 = document.getElementById("trash4");
 
 let draggedCard;
 
+trilho.addEventListener("click", () => {
+    const elementsToToggle = [
+        trilho,
+        body,
+        header,
+        dropdown,
+        info,
+        column1,
+        column2,
+        column3,
+        column4,
+        todo,
+        doing,
+        review,
+        done,
+        novatarefa1,
+        novatarefa2,
+        novatarefa3,
+        novatarefa4,
+        tituloColunaNova,
+        botaoColuna,
+        botaoExcluir1,
+        botaoExcluir2,
+        botaoExcluir3,
+        botaoExcluir4,
+    ];
+
+    elementsToToggle.forEach(element => element.classList.toggle("dark"));
+});
+
 const dragStart = (event) => {
-    draggedCard = event.target;
+    draggedCard = event.target.closest(".card-container"); // Certifica que o contêiner é arrastado
     event.dataTransfer.effectAllowed = "move";
 };
 
@@ -73,61 +85,79 @@ const drop = ({ target }) => {
 
 const createCard = (columnCards) => {
     const textArea = document.createElement("textarea");
-    const button = document.createElement("button");
-    button.className = "add-column-btn";
 
     textArea.className = "card";
-    textArea.draggable = true;
     textArea.placeholder = "Digite algo...";
     textArea.spellcheck = "false";
 
     textArea.addEventListener("focusout", () => {
-        if (!textArea.value.trim()) {
-            textArea.remove();
-            button.remove();
-        } else {
-            button.remove();
-        }
-    });
-
-    button.textContent = "Enviar";
-    button.addEventListener("click", () => {
         const value = textArea.value.trim();
         if (value) {
             const newCard = document.createElement("textarea");
+            const trashIcon = document.createElement("i");
+
+            // Configuração do card finalizado
             newCard.className = "card";
-            newCard.draggable = true;
+            newCard.draggable = false; // Não permitir arrastar diretamente o textarea
             newCard.value = value;
             newCard.placeholder = "Digite algo...";
             newCard.addEventListener("focusout", () => {
                 if (!newCard.value.trim()) newCard.remove();
             });
-            newCard.addEventListener("dragstart", dragStart);
 
+            // Configuração do ícone de lixeira
+            trashIcon.className = "bi bi-trash3-fill";
+            trashIcon.title = "Excluir";
+            trashIcon.addEventListener("click", () => {
+                const cardContainer = trashIcon.parentElement;
+                cardContainer.remove();
+            });
+
+            // Função para aplicar o tema ao ícone da lixeira
+            const applyTrashIconTheme = () => {
+                const isDarkMode = body.classList.contains("dark");
+                if (isDarkMode) {
+                    trashIcon.classList.add("dark"); // Adiciona a classe "dark" para modo escuro
+                } else {
+                    trashIcon.classList.remove("dark"); // Remove a classe "dark" para modo claro
+                }
+            };
+
+            // Aplica o tema no ícone ao criar o card
+            applyTrashIconTheme();
+
+            // Criar contêiner do card
             const cardContainer = document.createElement("div");
             cardContainer.className = "card-container";
-            cardContainer.append(newCard, button);
-
-            criarIconeLixeira(cardContainer);
+            cardContainer.draggable = true; // Agora o contêiner é arrastável
+            cardContainer.addEventListener("dragstart", dragStart); // Atrelado ao contêiner
+            cardContainer.append(newCard, trashIcon);
 
             columnCards.append(cardContainer);
-
-            textArea.value = "";
-            textArea.remove();
-            button.remove();
         }
+        textArea.remove(); // Remove o textarea inicial após o foco ser perdido
     });
-
-    textArea.addEventListener("dragstart", dragStart);
 
     const cardContainer = document.createElement("div");
     cardContainer.className = "card-container";
-    cardContainer.append(textArea, button);
-
+    cardContainer.append(textArea);
 
     columnCards.append(cardContainer);
 
     textArea.focus();
+
+    // Adiciona um ouvinte para mudanças de tema, para atualizar o ícone da lixeira
+    trilho.addEventListener("click", () => {
+        const isDarkMode = body.classList.contains("dark");
+        const trashIcons = columnCards.querySelectorAll(".bi-trash3-fill");
+        trashIcons.forEach(trashIcon => {
+            if (isDarkMode) {
+                trashIcon.classList.add("dark");
+            } else {
+                trashIcon.classList.remove("dark");
+            }
+        });
+    });
 };
 
 const addDragAndDropListeners = (columnCards) => {
@@ -140,7 +170,7 @@ const addDragAndDropListeners = (columnCards) => {
 const initializeColumns = () => {
     const columns = document.querySelectorAll(".column");
     columns.forEach((column) => {
-        const excluirIcon = column.querySelector("img[alt='excluir']");
+        const excluirIcon = column.querySelector("i");
         excluirIcon.addEventListener("click", excluirColuna);
         const columnCards = column.querySelector(".column__cards");
         const addButton = column.querySelector(".add-card-btn");
@@ -167,13 +197,42 @@ const createColumn = (title) => {
     addButton.className = "add-card-btn";
     addButton.addEventListener("click", () => createCard(columnCards));
 
-    const trashIcon = document.createElement("img");
-    trashIcon.src = "/projeto mensal/taskBoard/scripts/utils/trash.png";
+    const trashIcon = document.createElement("i");
+    trashIcon.classList = "bi bi-trash3-fill";
     trashIcon.alt = "excluir";
     trashIcon.addEventListener("click", excluirColuna);
 
     const excluirDiv = document.createElement("div");
     excluirDiv.className = "excluir";
+
+    // Função para aplicar o estilo de acordo com o tema atual
+    const applyTheme = () => {
+        const isDarkMode = body.classList.contains("dark");
+        const elementsToStyle = [
+            column,
+            columnTitle,
+            columnCards,
+            addButton,
+            trashIcon,
+            excluirDiv
+        ];
+
+        // Se estiver em modo escuro, adiciona a classe "dark"
+        if (isDarkMode) {
+            elementsToStyle.forEach(element => {
+                element.classList.add("dark");
+            });
+        } else {
+            // Se estiver em modo claro, remove a classe "dark"
+            elementsToStyle.forEach(element => {
+                element.classList.remove("dark");
+            });
+        }
+    };
+
+    // Aplica o tema ao criar a coluna
+    applyTheme();
+
     excluirDiv.append(columnTitle, trashIcon);
 
     column.append(excluirDiv, addButton, columnCards);
@@ -181,6 +240,9 @@ const createColumn = (title) => {
     columnsContainer.append(column);
 
     addDragAndDropListeners(columnCards);
+
+    // Adiciona um ouvinte para alterações de tema, para atualizar a coluna automaticamente
+    trilho.addEventListener("click", applyTheme);
 };
 
 
