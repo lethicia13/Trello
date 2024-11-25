@@ -127,7 +127,7 @@ header {
 .column {
   width: 250px;
   background-color: #E8E2DA;
-  height: 100dvh;
+  height: 79dvh;
   border-radius: 8px;
 }
 
@@ -189,6 +189,7 @@ header {
 .add-column{
   display: flex;
   flex-direction: row;
+  margin-right: 30px;
 }
 
 .add-column-btn{
@@ -196,6 +197,7 @@ header {
   border-radius: 5px;
   color: #E8E2DA;
   padding: 2px;
+  margin-left: 5px;
 }
 
 i{
