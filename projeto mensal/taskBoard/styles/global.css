@@ -18,6 +18,8 @@ main {
   justify-content: flex-start;
   align-items: baseline;
   gap: 20px;
+  overflow: auto;
+  overflow-y: hidden;
 }
 
 .hidden {
