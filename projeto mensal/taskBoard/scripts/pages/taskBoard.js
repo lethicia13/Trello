@@ -112,7 +112,12 @@ const createCard = (columnCards) => {
             trashIcon.title = "Excluir";
             trashIcon.addEventListener("click", () => {
                 const cardContainer = trashIcon.parentElement;
-                cardContainer.remove();
+                const resposta = confirm("Tem certeza de que deseja excluir este item?");
+                if (resposta) {
+                    cardContainer.remove();
+                } else {
+                   return; 
+                }
             });
 
             // Função para aplicar o tema ao ícone da lixeira
@@ -261,9 +266,11 @@ addColumnButton.addEventListener("click", () => {
 
 const excluirColuna = (event) => {
     const coluna = event.target.closest('.column');
-    if (coluna) {
-        window.alert("Tem certeza que deseja excluir essa coluna?");
+    const resposta = confirm("Tem certeza de que deseja excluir este item?");
+    if (resposta) {
         coluna.remove();
+    } else {
+       return; 
     }
 };
 
