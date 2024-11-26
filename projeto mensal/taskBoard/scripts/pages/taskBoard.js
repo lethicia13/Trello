@@ -24,6 +24,7 @@ let botaoExcluir1 = document.getElementById("trash1");
 let botaoExcluir2 = document.getElementById("trash2");
 let botaoExcluir3 = document.getElementById("trash3");
 let botaoExcluir4 = document.getElementById("trash4");
+let dropdowncontent = document.getElementById("dropdown-content");
 
 let draggedCard;
 
@@ -52,6 +53,7 @@ trilho.addEventListener("click", () => {
         botaoExcluir2,
         botaoExcluir3,
         botaoExcluir4,
+        dropdowncontent
     ];
 
     elementsToToggle.forEach(element => element.classList.toggle("dark"));

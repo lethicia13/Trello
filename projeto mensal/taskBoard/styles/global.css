@@ -10,6 +10,7 @@
 
 body {
   background-color: #D3DADC;
+  overflow: hidden;
 }
 
 main {
@@ -19,7 +20,7 @@ main {
   align-items: baseline;
   gap: 20px;
   overflow: auto;
-  overflow-y: hidden;
+  min-height: calc(100vh - 70px);
 }
 
 .hidden {
@@ -39,9 +40,9 @@ header {
 .dropbtn {
   background-color:#D3DADC;
   color: #455763;
-  padding: 6px;
+  padding: 16px;
   font-size: 16px;
-  text-align: center;
+  border: none;
   cursor: pointer;
   margin-left: 30px;
   border-radius: 5px;
@@ -55,18 +56,23 @@ header {
 .dropdown-content {
   display: none;
   position: absolute;
-  background-color: #D6C9B4;
-  min-width: 160px;
-  right: 0;
+  background-color:#D3DADC;
+  min-width: 138px;
+  border-radius: 5px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
+  right: 0;
+  list-style: none;
 }
 
-.dropdown-content p {
-  color: #E8E2DA;
+.dropdown-content a {
+  color:#455763;
   padding: 12px 16px;
   text-decoration: none;
   display: block;
 }
+
+.dropdown-content a:hover {background-color:#E8E2DA;}
 
 .dropdown:hover .dropdown-content {
   display: block;
@@ -122,13 +128,18 @@ header {
   gap: 15px;
   margin-top: 50px;
   padding: 30px;
+  width: 100%;
 }
 
 .column {
   width: 250px;
   background-color: #E8E2DA;
-  height: 72dvh;
   border-radius: 8px;
+  padding: 10px;
+  height:fit-content;
+  max-height: calc(93vh - 150px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .column__title {
@@ -184,6 +195,7 @@ header {
   background-color: #E8E2DA;
   width: 190px;
   border-radius: 5px;
+  padding: 5px;
 }
 
 .add-column{
@@ -234,6 +246,21 @@ header.dark{
   background-color: #455763;
   color: #E8E2DA;
 }
+
+.dropdown-content.dark{
+  background-color: #455763;
+  color: #E8E2DA;
+}
+
+.dropdown-content.dark a{
+  color: #E8E2DA;
+}
+
+.dropdown-content.dark a:hover {
+  background-color:#D6C9B4;
+  color: #455763;
+}
+
 
 .info-logout-darkmode.dark p{
   color: #D6C9B4;

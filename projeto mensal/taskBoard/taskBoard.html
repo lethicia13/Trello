@@ -8,10 +8,19 @@
   </head>
   <body>
     <header>
+
       <div class="dropdown" id="dropdown">
-        <button type="button" class="dropbtn" id="dropbtn">Board Kanban</button>
-        <div class="dropdown-content"></div>
+        <button class="dropbtn" id="dropbtn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Board Kanban
+        </button>
+        <ul class="dropdown-content" id="dropdown-content">
+          <li><a class="dropdown-item" href="#">Pessoal</a></li>
+          <li><a class="dropdown-item" href="#">Trabalho</a></li>
+          <li><a class="dropdown-item" href="#">Faculdade</a></li>
+          <li><a class="dropdown-item" href="#">Casa</a></li>
+        </ul>
       </div>
+
       <div class="info-logout-darkmode" id="info-logout-darkmode">
         <p>Olá, fulana</p>
         <a href="#">Logout</a>
