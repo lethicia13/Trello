@@ -19,6 +19,7 @@ main {
   align-items: baseline;
   gap: 20px;
   overflow: auto;
+  min-height: calc(100vh - 70px);
 }
 
 .hidden {
@@ -55,12 +56,15 @@ header {
   display: none;
   position: absolute;
   background-color: #d3dadc;
-  min-width: 138px;
+  height: 70vh;
   border-radius: 5px;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
   left: 0;
   list-style: none;
+  overflow-y: hidden;
+  overflow:scroll;
+  user-select: none;
 }
 
 .dropdown-content a {
@@ -68,6 +72,7 @@ header {
   padding: 12px 16px;
   text-decoration: none;
   display: block;
+  cursor: pointer;
 }
 
 .dropdown-item {
@@ -133,16 +138,15 @@ header {
   gap: 15px;
   margin-top: 50px;
   padding: 30px;
-  width: 100%;
 }
 
 .column {
   width: 250px;
-  background-color: #e8e2da;
+  background-color:#e8e2da;
   border-radius: 8px;
   padding: 10px;
-  height: fit-content;
-  max-height: calc(93vh - 150px);
+  height:fit-content;
+  min-width: 200px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -173,6 +177,19 @@ header {
   font-weight: 500;
   color: #455763;
   margin-bottom: 5px;
+}
+
+.card__title{
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.card__description{
+  font-size: 15px;
+}
+
+.card__title-input, .card__description-input{
+  background-color: #e8e2da;
 }
 
 .column--highlight {
