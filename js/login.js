@@ -1,5 +1,5 @@
-import { API_BASE_URL } from "../../config/apiConfig.js";
-import { saveToLocalStorage } from "../utils/storage.js";
+import { API_BASE_URL } from "../js/apiConfig.js";
+import { saveToLocalStorage } from "../js/storage.js";
 
 const loginForm = document.getElementById("login-form");
 const emailInput = document.getElementById("email");
@@ -30,8 +30,8 @@ loginForm.addEventListener("submit", async (event) => {
     }
 
     const userData = await response.json();
-    saveToLocalStorage("user", { id: userData.Id, email: userData.Email });
-    window.location.href = "taskBoard.html";
+    saveToLocalStorage("user", { id: userData.Id, email: userData.Email, nome: userData.Name });
+    window.location.href = "/telas/taskBoard.html";
   } catch (error) {
     showError("Falha ao se conectar com o servidor. Tente novamente mais tarde");
   } finally {
