@@ -21,6 +21,95 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
+document.addEventListener("DOMContentLoaded", async () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const personId = user.id;
+  console.log(personId);
+
+  try {
+    const response = await fetch(
+      `https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/PersonConfigById?PersonId=${personId}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Erro na API: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+    applyTheme(personId, data);
+  } catch (error) {
+    console.error("Erro ao carregar o tema:", error);
+  }
+});
+
+function applyTheme(personId, data) {
+  if (personId == data.PersonId) {
+    if (data.DefaultThemeId == 1) {
+      const elementIds = [
+        "trilho",
+        "body",
+        "header",
+        "dropbtn",
+        "info-logout-darkmode",
+        "column1",
+        "column2",
+        "column3",
+        "column4",
+        "todo",
+        "doing",
+        "review",
+        "done",
+        "novatarefa1",
+        "novatarefa2",
+        "novatarefa3",
+        "novatarefa4",
+        "new-column-title",
+        "add-column-btn",
+        "trash1",
+        "trash2",
+        "trash3",
+        "trash4",
+        "dropdown-content",
+      ];
+
+      const elementsToToggle = elementIds.map((id) => {
+        const element = document.getElementById(id);
+
+        if (!element) {
+          console.log(`Elemento com ID '${id}' não encontrado.`);
+        }
+        return element;
+      });
+
+      elementsToToggle
+        .filter((element) => element)
+        .forEach((element) => element.classList.toggle("dark"));
+        
+        const columns = document.getElementsByClassName("column");
+        const cards = document.getElementsByClassName("card");
+        const titles = document.getElementsByClassName("columns__title");
+
+        console.log(columns);
+        
+        for (const column of columns) {
+          column.classList.toggle("dark");
+        }        
+
+        for (const card of cards){
+          cards.classList.toggle("dark");
+        }
+
+        for (const title of titles){
+          cards.classList.toggle("dark");
+        }
+  
+    } else if (data.DefaultThemeId == 2) {
+      console.log("personId é 2, nenhuma ação será realizada.");
+    }
+  }
+}
+
 function populateDropdown(data, dropdownContent, columnsSection) {
   dropdownContent.innerHTML = "";
 
@@ -57,6 +146,7 @@ async function carregarColunas(boardId, columnsSection) {
     for (const column of columnsData) {
       const columnSection = document.createElement("section");
       columnSection.className = "column";
+      columnSection.classList.add("dark");
 
       columnSection.innerHTML = `
         <div class="excluir">
@@ -74,12 +164,10 @@ async function carregarColunas(boardId, columnsSection) {
 
       const columnCards = columnSection.querySelector(".column__cards");
       const addButton = columnSection.querySelector(".add-card-btn");
-      
+
       addButton.addEventListener("click", () => createCard(columnCards));
 
       await carregarTasks(column.Id, columnCards);
-
-      applyThemeToColumn(columnSection);
     }
   } catch (error) {
     console.error("Erro ao carregar as colunas:", error);
@@ -106,9 +194,12 @@ async function carregarTasks(columnId, columnCards) {
       tasksData.forEach((task) => {
         const taskContainer = document.createElement("div");
         taskContainer.classList.add("card-container");
+        taskContainer.classList.add("dark");
 
         const taskDiv = document.createElement("div");
         taskDiv.classList.add("card");
+        taskDiv.classList.add("dark");
+
 
         taskDiv.innerHTML = `
           <p class="card__title">${task.Title}</p>
@@ -122,12 +213,15 @@ async function carregarTasks(columnId, columnCards) {
         // Criando o ícone de lixeira fora do card, mas associando ao container
         const trashIconContainer = document.createElement("div");
         trashIconContainer.classList.add("trash-container");
-        
+
         const trashIcon = document.createElement("i");
         trashIcon.classList = "bi bi-trash3-fill";
+        trashIcon.classList.add("dark");
         trashIcon.title = "Excluir";
         trashIcon.addEventListener("click", () => {
-          const resposta = confirm("Tem certeza de que deseja excluir este item?");
+          const resposta = confirm(
+            "Tem certeza de que deseja excluir este item?"
+          );
           if (resposta) {
             taskContainer.remove();
           }
@@ -188,7 +282,9 @@ function createCard(columnCards) {
       trashIcon.title = "Excluir";
 
       trashIcon.addEventListener("click", () => {
-        const resposta = confirm("Tem certeza de que deseja excluir este item?");
+        const resposta = confirm(
+          "Tem certeza de que deseja excluir este item?"
+        );
         if (resposta) {
           cardContainer.remove();
         }
@@ -213,10 +309,9 @@ function createCard(columnCards) {
   columnCards.appendChild(titleInput);
   columnCards.appendChild(descriptionInput);
   columnCards.appendChild(sendButton);
-  
+
   titleInput.focus();
 }
-
 
 const excluirColuna = (event) => {
   const coluna = event.target.closest(".column");
@@ -227,24 +322,6 @@ const excluirColuna = (event) => {
     return;
   }
 };
-
-function applyThemeToColumn(columnSection) {
-  const isDarkMode = document.body.classList.contains("dark");
-  const elementsToStyle = [
-    columnSection,
-    columnSection.querySelector(".column__title"),
-    columnSection.querySelector(".add-card-btn"),
-    columnSection.querySelector(".bi-trash3-fill"),
-  ];
-
-  elementsToStyle.forEach((element) => {
-    if (isDarkMode) {
-      element.classList.add("dark");
-    } else {
-      element.classList.remove("dark");
-    }
-  });
-}
 
 function logout() {
   localStorage.clear();
