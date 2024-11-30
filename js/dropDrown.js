@@ -1,4 +1,26 @@
-document.addEventListener("DOMContentLoaded", async () => {
+async function carregarTemas() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const personId = user.id;
+  console.log(personId);
+
+  try {
+    const response = await fetch(
+      `https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/PersonConfigById?PersonId=${personId}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Erro na API: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+    applyTheme(data);
+  } catch (error) {
+    console.error("Erro ao carregar o tema:", error);
+  }
+}
+
+async function carregarDropdown() {
   const dropdownContent = document.getElementById("dropdown-content");
   const columnsSection = document.querySelector(".columns");
 
@@ -19,113 +41,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Erro ao carregar os boards:", error);
     dropdownContent.innerHTML = "<li>Erro ao carregar dados</li>";
   }
-});
-
-document.addEventListener("DOMContentLoaded", async () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  const personId = user.id;
-  console.log(personId);
-
-  try {
-    const response = await fetch(
-      `https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/PersonConfigById?PersonId=${personId}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Erro na API: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log(data);
-    applyTheme(personId, data);
-  } catch (error) {
-    console.error("Erro ao carregar o tema:", error);
-  }
-});
-
-function applyTheme(personId, data) {
-  if (personId == data.PersonId) {
-    if (data.DefaultThemeId == 1) {
-      const elementIds = [
-        "trilho",
-        "body",
-        "header",
-        "dropbtn",
-        "info-logout-darkmode",
-        "column1",
-        "column2",
-        "column3",
-        "column4",
-        "todo",
-        "doing",
-        "review",
-        "done",
-        "novatarefa1",
-        "novatarefa2",
-        "novatarefa3",
-        "novatarefa4",
-        "new-column-title",
-        "add-column-btn",
-        "trash1",
-        "trash2",
-        "trash3",
-        "trash4",
-        "dropdown-content",
-      ];
-
-      const elementsToToggle = elementIds.map((id) => {
-        const element = document.getElementById(id);
-
-        if (!element) {
-          console.log(`Elemento com ID '${id}' não encontrado.`);
-        }
-        return element;
-      });
-
-      elementsToToggle
-        .filter((element) => element)
-        .forEach((element) => element.classList.toggle("dark"));
-        
-        const columns = document.getElementsByClassName("column");
-        const cards = document.getElementsByClassName("card");
-        const titles = document.getElementsByClassName("columns__title");
-
-        console.log(columns);
-        
-        for (const column of columns) {
-          column.classList.toggle("dark");
-        }        
-
-        for (const card of cards){
-          cards.classList.toggle("dark");
-        }
-
-        for (const title of titles){
-          cards.classList.toggle("dark");
-        }
-  
-    } else if (data.DefaultThemeId == 2) {
-      console.log("personId é 2, nenhuma ação será realizada.");
-    }
-  }
-}
-
-function populateDropdown(data, dropdownContent, columnsSection) {
-  dropdownContent.innerHTML = "";
-
-  data.forEach((board) => {
-    const listItem = document.createElement("li");
-    const link = document.createElement("a");
-    link.className = "dropdown-item";
-    link.textContent = board.Name;
-
-    link.addEventListener("click", () => {
-      carregarColunas(board.Id, columnsSection);
-    });
-
-    listItem.appendChild(link);
-    dropdownContent.appendChild(listItem);
-  });
 }
 
 async function carregarColunas(boardId, columnsSection) {
@@ -140,32 +55,64 @@ async function carregarColunas(boardId, columnsSection) {
 
     const columnsData = await response.json();
     console.log(columnsData);
-
+    const main = document.querySelector("main");
+    main.classList.remove("hidden");
     columnsSection.innerHTML = "";
 
     for (const column of columnsData) {
       const columnSection = document.createElement("section");
-      columnSection.className = "column";
-      columnSection.classList.add("dark");
+      columnSection.className = "column dark";
 
-      columnSection.innerHTML = `
-        <div class="excluir">
-          <h2 class="column__title" contenteditable="true">${column.Name}</h2>
-          <i class="bi bi-trash3-fill"></i>
-        </div>
-        <button class="add-card-btn">Nova tarefa</button>
-        <section class="column__cards" id="tasks-${column.Id}"></section>
-      `;
+      const excluirDiv = document.createElement("div");
+      excluirDiv.className = "excluir";
+
+      const columnTitle = document.createElement("h2");
+      columnTitle.className = "column__title";
+      columnTitle.classList.add("dark");
+      columnTitle.contentEditable = "true";
+      columnTitle.textContent = column.Name;
+
+      const excluirIcon = document.createElement("i");
+      excluirIcon.className = "bi bi-trash3-fill";
+      excluirIcon.classList.add("dark");
+      excluirIcon.addEventListener("click", excluirColuna);
+      addDragAndDropListeners(columnSection);
+
+      excluirDiv.appendChild(columnTitle);
+      excluirDiv.appendChild(excluirIcon);
+
+      const addCardButton = document.createElement("button");
+      addCardButton.className = "add-card-btn";
+      addCardButton.textContent = "Nova tarefa";
+
+      const columnCards = document.createElement("section");
+      columnCards.className = "column__cards";
+      columnCards.id = `tasks-${column.Id}`;
+
+      const isDarkMode = document.body.classList.contains("dark");
+
+      if (isDarkMode) {
+        columnSection.classList.add("dark");
+        columnTitle.classList.add("dark");
+        excluirIcon.classList.add("dark");
+        addCardButton.classList.add("dark");
+        columnCards.classList.add("dark");
+      } else {
+        columnSection.classList.remove("dark");
+        columnTitle.classList.remove("dark");
+        excluirIcon.classList.remove("dark");
+        addCardButton.classList.remove("dark");
+        columnCards.classList.remove("dark");
+      }
+    
+
+      addCardButton.addEventListener("click", () => createCard(columnCards));
+
+      columnSection.appendChild(excluirDiv);
+      columnSection.appendChild(addCardButton);
+      columnSection.appendChild(columnCards);
 
       columnsSection.appendChild(columnSection);
-
-      const excluirIcon = columnSection.querySelector("i");
-      excluirIcon.addEventListener("click", excluirColuna);
-
-      const columnCards = columnSection.querySelector(".column__cards");
-      const addButton = columnSection.querySelector(".add-card-btn");
-
-      addButton.addEventListener("click", () => createCard(columnCards));
 
       await carregarTasks(column.Id, columnCards);
     }
@@ -195,11 +142,12 @@ async function carregarTasks(columnId, columnCards) {
         const taskContainer = document.createElement("div");
         taskContainer.classList.add("card-container");
         taskContainer.classList.add("dark");
+        taskContainer.draggable = true;
+        taskContainer.addEventListener("dragstart", dragStart);
 
         const taskDiv = document.createElement("div");
         taskDiv.classList.add("card");
         taskDiv.classList.add("dark");
-
 
         taskDiv.innerHTML = `
           <p class="card__title">${task.Title}</p>
@@ -210,7 +158,6 @@ async function carregarTasks(columnId, columnCards) {
 
         taskContainer.appendChild(taskDiv);
 
-        // Criando o ícone de lixeira fora do card, mas associando ao container
         const trashIconContainer = document.createElement("div");
         trashIconContainer.classList.add("trash-container");
 
@@ -226,6 +173,16 @@ async function carregarTasks(columnId, columnCards) {
             taskContainer.remove();
           }
         });
+
+        const isDarkMode = document.body.classList.contains("dark");
+
+        if (isDarkMode) {
+          taskDiv.classList.add("dark");
+          trashIcon.classList.add("dark");
+        } else {
+          taskDiv.classList.remove("dark");
+          trashIcon.classList.remove("dark");
+        }
 
         trashIconContainer.appendChild(trashIcon);
         taskContainer.appendChild(trashIconContainer);
@@ -243,22 +200,124 @@ async function carregarTasks(columnId, columnCards) {
   }
 }
 
+function applyTheme(data) {
+  if (data.DefaultThemeId === 1) {
+    const classNames = [
+      "dropdown",
+      "dropbtn",
+      "dropdown-content",
+      "dropdown-item",
+      "info-logout-darkmode",
+      "trilho",
+      "indicador",
+      "columns",
+      "column",
+      "excluir",
+      "column__title",
+      "bi bi-trash3-fill",
+      "add-card-btn",
+      "column__cards",
+    ];
+
+    classNames.forEach((className) => {
+      const elements = document.getElementsByClassName(className);
+      Array.from(elements).forEach((element) => {
+        element.classList.toggle("dark");
+      });
+    });
+
+    const body = document.querySelector("body");
+    const header = document.querySelector("header");
+
+    if (body) {
+      body.classList.toggle("dark");
+    } else {
+      console.log("<body> não encontrado.");
+    }
+
+    if (header) {
+      header.classList.toggle("dark");
+    } else {
+      console.log("<header> não encontrado.");
+    }
+
+    console.log("Tema 'dark' aplicado aos elementos especificados.");
+  } else if (data.DefaultThemeId === 2) {
+    console.log("DefaultThemeId é 2, nenhuma ação será realizada.");
+  }
+}
+
+function recuperarDados() {
+  const userData = localStorage.getItem("user");
+
+  if (userData) {
+    const user = JSON.parse(userData);
+    console.log(user);
+
+    const userNameElement = document.getElementById("nomeFulana");
+
+    const primeiroNome = user.nome.split(" ")[0];
+    userNameElement.innerHTML = `Olá, ${primeiroNome}!`;
+  } else {
+    userNameElement.innerHTML = "Bem vindo!";
+  }
+}
+
+function populateDropdown(data, dropdownContent, columnsSection) {
+  dropdownContent.innerHTML = "";
+
+  data.forEach((board) => {
+    const listItem = document.createElement("li");
+    const link = document.createElement("a");
+    link.className = "dropdown-item";
+    link.textContent = board.Name;
+
+    link.addEventListener("click", () => {
+      carregarColunas(board.Id, columnsSection);
+    });
+
+    listItem.appendChild(link);
+    dropdownContent.appendChild(listItem);
+  });
+}
+
 function createCard(columnCards) {
   const titleInput = document.createElement("textarea");
   titleInput.className = "card__title-input";
-  titleInput.placeholder = "Digite o título aqui...";
+  titleInput.placeholder = "Digite o título aqui";
   titleInput.spellcheck = "false";
 
   const descriptionInput = document.createElement("textarea");
   descriptionInput.className = "card__description-input";
-  descriptionInput.placeholder = "Digite a descrição aqui...";
+  descriptionInput.placeholder = "Digite a descrição aqui";
   descriptionInput.spellcheck = "false";
 
-  const sendButton = document.createElement("button");
-  sendButton.className = "add-card-btn";
-  sendButton.textContent = "Criar card";
+  const inputContainer = document.createElement("div");
+  inputContainer.className = "input-container";
 
-  const createAndAddCard = () => {
+  inputContainer.appendChild(titleInput);
+  inputContainer.appendChild(descriptionInput);
+
+  const sendButton = document.createElement("button");
+  sendButton.textContent = "Criar Card";
+  sendButton.classList = "add-card-btn";
+  inputContainer.appendChild(sendButton);
+
+  columnCards.appendChild(inputContainer);
+
+  titleInput.addEventListener("blur", () => {
+    if (!titleInput.value.trim() && !descriptionInput.value.trim()) {
+      inputContainer.remove();
+    }
+  });
+
+  descriptionInput.addEventListener("blur", () => {
+    if (!titleInput.value.trim() && !descriptionInput.value.trim()) {
+      inputContainer.remove();
+    }
+  });
+
+  sendButton.addEventListener("click", () => {
     const titleValue = titleInput.value.trim();
     const descriptionValue = descriptionInput.value.trim();
 
@@ -281,6 +340,14 @@ function createCard(columnCards) {
       trashIcon.className = "bi bi-trash3-fill";
       trashIcon.title = "Excluir";
 
+      const isDarkMode = document.body.classList.contains("dark");
+
+      if (isDarkMode) {
+        trashIcon.classList.add("dark");
+      } else {
+        trashIcon.classList.remove("dark");
+      }
+
       trashIcon.addEventListener("click", () => {
         const resposta = confirm(
           "Tem certeza de que deseja excluir este item?"
@@ -299,19 +366,114 @@ function createCard(columnCards) {
       columnCards.appendChild(cardContainer);
     }
 
-    titleInput.remove();
-    descriptionInput.remove();
-    sendButton.remove();
-  };
-
-  sendButton.addEventListener("click", createAndAddCard);
-
-  columnCards.appendChild(titleInput);
-  columnCards.appendChild(descriptionInput);
-  columnCards.appendChild(sendButton);
+    inputContainer.remove();
+  });
 
   titleInput.focus();
 }
+
+function botaoCriarColuna(){
+  const addColumnBtn = document.getElementById("add-column-btn");
+  const newColumnTitleInput = document.getElementById("new-column-title");
+
+  addColumnBtn.addEventListener("click", () => {
+    const title = newColumnTitleInput.value.trim();
+    
+    if (title) {
+      criarColuna(title);
+      newColumnTitleInput.value = "";
+    } else {
+      alert("Por favor, insira um título para a coluna.");
+    }
+  });
+}
+
+function criarColuna(title) {
+  const columnSection = document.createElement("section");
+  columnSection.className = "column";
+
+  const isDarkMode = document.body.classList.contains("dark");
+
+  const excluirDiv = document.createElement("div");
+  excluirDiv.className = "excluir";
+
+  const columnTitle = document.createElement("h2");
+  columnTitle.className = "column__title";
+  columnTitle.contentEditable = "true";
+  columnTitle.textContent = title;
+
+  const excluirIcon = document.createElement("i");
+  excluirIcon.className = "bi bi-trash3-fill";
+  excluirIcon.addEventListener("click", excluirColuna);
+
+  excluirDiv.appendChild(columnTitle);
+  excluirDiv.appendChild(excluirIcon);
+
+  const addCardButton = document.createElement("button");
+  addCardButton.className = "add-card-btn";
+  addCardButton.textContent = "Nova tarefa";
+
+  const columnCards = document.createElement("section");
+  columnCards.className = "column__cards";
+
+  columnSection.appendChild(excluirDiv);
+  columnSection.appendChild(addCardButton);
+  columnSection.appendChild(columnCards);
+
+  const columnsSection = document.querySelector(".columns");
+  columnsSection.appendChild(columnSection);
+
+  if (isDarkMode) {
+    columnSection.classList.add("dark");
+    columnTitle.classList.add("dark");
+    excluirIcon.classList.add("dark");
+    addCardButton.classList.add("dark");
+    columnCards.classList.add("dark");
+  } else {
+    columnSection.classList.remove("dark");
+    columnTitle.classList.remove("dark");
+    excluirIcon.classList.remove("dark");
+    addCardButton.classList.remove("dark");
+    columnCards.classList.remove("dark");
+  }
+
+  addCardButton.addEventListener("click", () => createCard(columnCards));
+}
+
+let draggedCard;
+
+const dragStart = (event) => {
+  draggedCard = event.target.closest(".card-container");
+  event.dataTransfer.effectAllowed = "move";
+};
+
+const dragOver = (event) => {
+  event.preventDefault();
+};
+
+const dragEnter = ({ target }) => {
+  if (target.classList.contains("column__cards")) {
+    target.classList.add("column--highlight");
+  }
+};
+
+const dragLeave = ({ target }) => {
+  target.classList.remove("column--highlight");
+};
+
+const drop = ({ target }) => {
+  if (target.classList.contains("column__cards")) {
+    target.classList.remove("column--highlight");
+    target.append(draggedCard);
+  }
+};
+
+const addDragAndDropListeners = (columnCards) => {
+  columnCards.addEventListener("dragover", dragOver);
+  columnCards.addEventListener("dragenter", dragEnter);
+  columnCards.addEventListener("dragleave", dragLeave);
+  columnCards.addEventListener("drop", drop);
+};
 
 const excluirColuna = (event) => {
   const coluna = event.target.closest(".column");
@@ -327,3 +489,8 @@ function logout() {
   localStorage.clear();
   window.location.href = "/index.html";
 }
+
+botaoCriarColuna();
+recuperarDados();
+carregarDropdown();
+carregarTemas();

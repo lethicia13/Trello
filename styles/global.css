@@ -63,7 +63,7 @@ header {
   left: 0;
   list-style: none;
   overflow-y: hidden;
-  overflow:scroll;
+  overflow: scroll;
   user-select: none;
 }
 
@@ -142,10 +142,10 @@ header {
 
 .column {
   width: 250px;
-  background-color:#e8e2da;
+  background-color: #e8e2da;
   border-radius: 8px;
   padding: 10px;
-  height:fit-content;
+  height: fit-content;
   min-width: 200px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -165,6 +165,13 @@ header {
   border-radius: 5px;
 }
 
+.card-container {
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+}
+
 .card {
   width: 100%;
   min-height: 70px;
@@ -179,16 +186,17 @@ header {
   margin-bottom: 5px;
 }
 
-.card__title{
+.card__title {
   font-size: 18px;
   font-weight: bold;
 }
 
-.card__description{
+.card__description {
   font-size: 15px;
 }
 
-.card__title-input, .card__description-input{
+.card__title-input,
+.card__description-input {
   background-color: #e8e2da;
 }
 
@@ -211,13 +219,6 @@ header {
   background-color: #d6c9b4;
   transform: scale(1.05);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-#new-column-title {
-  background-color: #e8e2da;
-  width: 190px;
-  border-radius: 5px;
-  padding: 5px;
 }
 
 .add-column {
@@ -292,60 +293,14 @@ header.dark {
   color: #d6c9b4;
 }
 
-#column1.dark,
-#column2.dark,
-#column3.dark,
-#column4.dark,
 .column.dark {
   background-color: #374a57;
 }
 
-#todo.dark,
-#doing.dark,
-#review.dark,
-#done.dark,
 .column__title.dark {
   color: #d6c9b4;
 }
 
-#novatarefa1.dark,
-#novatarefa2.dark,
-#novatarefa3.dark,
-#novatarefa4.dark,
-#add-column-btn.dark,
-.add-card-btn.dark {
-  background-color: #d6c9b4;
-  color: #273a48;
-}
-
-#new-column-title.dark {
-  background-color: #d6c9b4;
-  color: #273a48;
-}
-
-/* mudança do card */
-.card-container {
-  margin-bottom: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: end;
-}
-
-.card {
-  resize: vertical;
-  min-height: 70px;
-}
-
-.card-wrapper {
-  display: flex;
-  gap: 8px;
-  width: 100%;
-}
-
-#trash1.dark,
-#trash2.dark,
-#trash3.dark,
-#trash4.dark,
 .bi-trash3-fill.dark,
 .excluir.dark {
   color: #d6c9b4;
