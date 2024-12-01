@@ -70,6 +70,7 @@ async function carregarColunas(boardId, columnsSection) {
       columnTitle.className = "column__title";
       columnTitle.contentEditable = "true";
       columnTitle.textContent = column.Name;
+      columnTitle.spellcheck = "false";
 
       const excluirIcon = document.createElement("i");
       excluirIcon.className = "bi bi-trash3-fill";
@@ -112,6 +113,7 @@ async function carregarColunas(boardId, columnsSection) {
       columnsSection.appendChild(columnSection);
 
       await carregarTasks(column.Id, columnCards);
+      addDragAndDropListenersToColumns(columnSection);
     }
   } catch (error) {
     console.error("Erro ao carregar as colunas:", error);
@@ -214,7 +216,7 @@ function applyTheme(data) {
       "card__title-input",
       "card__description-input",
       "add-column-btn",
-      "new-column-title"
+      "new-column-title",
     ];
 
     classNames.forEach((className) => {
@@ -334,6 +336,8 @@ function createCard(columnCards) {
     if (titleValue || descriptionValue) {
       const cardContainer = document.createElement("div");
       cardContainer.className = "card-container";
+      cardContainer.draggable = true;
+      cardContainer.addEventListener("dragstart", dragStart);
 
       const card = document.createElement("div");
       card.className = "card";
@@ -341,10 +345,14 @@ function createCard(columnCards) {
       const cardTitle = document.createElement("p");
       cardTitle.className = "card__title";
       cardTitle.textContent = titleValue || "Sem título";
+      cardTitle.spellcheck = "false";
+      cardTitle.contentEditable = "true";
 
       const cardDescription = document.createElement("p");
       cardDescription.className = "card__description";
       cardDescription.textContent = descriptionValue || "Sem descrição";
+      cardDescription.spellcheck = "false";
+      cardDescription.contentEditable = "true";
 
       const trashIcon = document.createElement("i");
       trashIcon.className = "bi bi-trash3-fill";
@@ -412,15 +420,14 @@ function criarColuna(title) {
   const columnSection = document.createElement("section");
   columnSection.className = "column";
 
-  const isDarkMode = document.body.classList.contains("dark");
-
   const excluirDiv = document.createElement("div");
   excluirDiv.className = "excluir";
 
   const columnTitle = document.createElement("h2");
   columnTitle.className = "column__title";
-  columnTitle.contentEditable = "true";
   columnTitle.textContent = title;
+  columnTitle.contentEditable = "true";
+  columnTitle.spellcheck = "false";
 
   const excluirIcon = document.createElement("i");
   excluirIcon.className = "bi bi-trash3-fill";
@@ -443,6 +450,8 @@ function criarColuna(title) {
   const columnsSection = document.querySelector(".columns");
   columnsSection.appendChild(columnSection);
 
+  const isDarkMode = document.body.classList.contains("dark");
+
   if (isDarkMode) {
     columnSection.classList.add("dark");
     columnTitle.classList.add("dark");
@@ -458,6 +467,7 @@ function criarColuna(title) {
   }
 
   addCardButton.addEventListener("click", () => createCard(columnCards));
+  addDragAndDropListenersToColumns(columnSection);
 }
 
 let draggedCard;
@@ -495,6 +505,41 @@ const addDragAndDropListeners = (columnCards) => {
   columnCards.addEventListener("drop", drop);
 };
 
+let draggedColumn;
+
+const dragStartColumn = (event) => {
+  draggedColumn = event.target.closest(".column");
+  event.dataTransfer.effectAllowed = "move";
+};
+
+const dragOverColumn = (event) => {
+  event.preventDefault();
+};
+
+const dropColumn = (event) => {
+  event.preventDefault();
+  const targetColumn = event.target.closest(".column");
+  const columnsContainer = document.querySelector(".columns");
+
+  if (targetColumn && draggedColumn !== targetColumn) {
+    const bounding = targetColumn.getBoundingClientRect();
+    const offset = event.clientY - bounding.top + bounding.height / 2;
+
+    if (offset > 0) {
+      columnsContainer.insertBefore(draggedColumn, targetColumn.nextSibling);
+    } else {
+      columnsContainer.insertBefore(draggedColumn, targetColumn);
+    }
+  }
+};
+
+const addDragAndDropListenersToColumns = (columnSection) => {
+  columnSection.draggable = true;
+  columnSection.addEventListener("dragstart", dragStartColumn);
+  columnSection.addEventListener("dragover", dragOverColumn);
+  columnSection.addEventListener("drop", dropColumn);
+};
+
 const excluirColuna = (event) => {
   const coluna = event.target.closest(".column");
   const resposta = confirm("Tem certeza de que deseja excluir este item?");
@@ -528,7 +573,7 @@ function trilhoDark() {
       "card__description-input",
       "card",
       "add-column-btn",
-      "new-column-title"
+      "new-column-title",
     ];
 
     classNames.forEach((className) => {
