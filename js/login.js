@@ -18,7 +18,9 @@ loginForm.addEventListener("submit", async (event) => {
   disableButton(submitButton, true);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/GetPersonByEmail?Email=${email}`);
+    const response = await fetch(
+      `${API_BASE_URL}/GetPersonByEmail?Email=${email}`
+    );
     if (!response.ok) {
       if (response.status === 422) {
         const errorData = await response.json();
@@ -30,17 +32,22 @@ loginForm.addEventListener("submit", async (event) => {
     }
 
     const userData = await response.json();
-    saveToLocalStorage("user", { id: userData.Id, email: userData.Email, nome: userData.Name });
+    saveToLocalStorage("user", {
+      id: userData.Id,
+      email: userData.Email,
+      nome: userData.Name,
+    });
     window.location.href = "/telas/taskBoard.html";
   } catch (error) {
-    showError("Falha ao se conectar com o servidor. Tente novamente mais tarde");
+    showError(
+      "Falha ao se conectar com o servidor. Tente novamente mais tarde"
+    );
   } finally {
     disableButton(submitButton, false);
   }
 });
 
 function disableButton(button, disable) {
-  
   button.disabled = disable;
   button.textContent = disable ? "Carregando..." : "Acessar";
 }
@@ -49,3 +56,27 @@ function showError(message) {
   errorMessage.textContent = message;
   errorMessage.classList.remove("hidden");
 }
+
+function trilhoDark() {
+  const trilho = document.getElementById("trilho");
+
+  trilho.addEventListener("click", () => {
+    const classNames = ["login-container", "trilho"];
+
+    classNames.forEach((className) => {
+      const elements = document.getElementsByClassName(className);
+      Array.from(elements).forEach((element) => {
+        element.classList.toggle("dark");
+      });
+    });
+
+    const loginForm = document.getElementById("login-form");
+    const body = document.querySelector("body");
+
+    body.classList.toggle("dark");
+    loginForm.classList.toggle("dark");
+    console.log("Tema 'dark' aplicado aos elementos especificados.");
+  });
+}
+
+trilhoDark();
