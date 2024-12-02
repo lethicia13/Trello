@@ -12,6 +12,8 @@ body {
   min-height: 100vh;
   cursor: url(/imagem/cursor.png), pointer;
   background-color: #F2CBE0;
+  background-image: url(/imagem/Design\ sem\ nome.png);
+  background-size:cover;
 }
 
 main {
@@ -202,6 +204,7 @@ header {
 .card__description-input, .new-column-title {
   background-color: #F2CBE0;
   color: #8F477B;
+  width: 200px;
 }
 
 .column--highlight {
@@ -275,6 +278,8 @@ i {
 body.dark {
   background-color: #012A61;
   cursor: url(/imagem/cursordark.png), pointer;
+  background-image: url(/imagem/Design\ sem\ nome\ \(2\).png);
+  background-size:cover;
 }
 
 header.dark {
@@ -353,6 +358,7 @@ header.dark {
 .card__description-input.dark, .new-column-title.dark {
   background-color: #275A91;
   color: #FDC797;
+  width: 200px;
 }
 
 .column--highlight.dark {
