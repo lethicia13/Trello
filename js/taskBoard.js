@@ -75,7 +75,6 @@ async function carregarColunas(boardId, columnsSection) {
       const excluirIcon = document.createElement("i");
       excluirIcon.className = "bi bi-trash3-fill";
       excluirIcon.addEventListener("click", excluirColuna);
-      addDragAndDropListeners(columnSection);
 
       excluirDiv.appendChild(columnTitle);
       excluirDiv.appendChild(excluirIcon);
@@ -87,6 +86,9 @@ async function carregarColunas(boardId, columnsSection) {
       const columnCards = document.createElement("section");
       columnCards.className = "column__cards";
       columnCards.id = `tasks-${column.Id}`;
+
+      columnCards.draggable = true;
+      columnCards.addEventListener("dragstart", dragStart);
 
       const isDarkMode = document.body.classList.contains("dark");
 
@@ -111,9 +113,9 @@ async function carregarColunas(boardId, columnsSection) {
       columnSection.appendChild(columnCards);
 
       columnsSection.appendChild(columnSection);
+      addDragAndDropListenersToColumns(columnSection);
 
       await carregarTasks(column.Id, columnCards);
-      addDragAndDropListenersToColumns(columnSection);
     }
   } catch (error) {
     console.error("Erro ao carregar as colunas:", error);
@@ -134,58 +136,57 @@ async function carregarTasks(columnId, columnCards) {
     const tasksData = await response.json();
     console.log(`Tasks para a coluna ${columnId}:`, tasksData);
 
-    if (tasksData.length === 0) {
-      return;
-    } else {
-      tasksData.forEach((task) => {
-        const taskContainer = document.createElement("div");
-        taskContainer.classList.add("card-container");
-        taskContainer.draggable = true;
-        taskContainer.addEventListener("dragstart", dragStart);
+    tasksData.forEach((task) => {
+      const taskContainer = document.createElement("div");
+      taskContainer.classList.add("card-container");
+      taskContainer.draggable = true;
+      taskContainer.addEventListener("dragstart", dragStart);
 
-        const taskDiv = document.createElement("div");
-        taskDiv.classList.add("card");
+      const taskDiv = document.createElement("div");
+      taskDiv.classList.add("card");
 
-        taskDiv.innerHTML = `
+      taskDiv.innerHTML = `
           <p class="card__title">${task.Title}</p>
           <p class="card__description">${task.Description}</p>
         `;
 
-        taskDiv.contentEditable = "true";
+      taskDiv.contentEditable = "true";
 
-        taskContainer.appendChild(taskDiv);
+      taskContainer.appendChild(taskDiv);
 
-        const trashIconContainer = document.createElement("div");
-        trashIconContainer.classList.add("trash-container");
+      const trashIconContainer = document.createElement("div");
+      trashIconContainer.classList.add("trash-container");
 
-        const trashIcon = document.createElement("i");
-        trashIcon.classList = "bi bi-trash3-fill";
-        trashIcon.title = "Excluir";
-        trashIcon.addEventListener("click", () => {
-          const resposta = confirm(
-            "Tem certeza de que deseja excluir este item?"
-          );
-          if (resposta) {
-            taskContainer.remove();
-          }
-        });
-
-        const isDarkMode = document.body.classList.contains("dark");
-
-        if (isDarkMode) {
-          taskDiv.classList.add("dark");
-          trashIcon.classList.add("dark");
-        } else {
-          taskDiv.classList.remove("dark");
-          trashIcon.classList.remove("dark");
+      const trashIcon = document.createElement("i");
+      trashIcon.classList = "bi bi-trash3-fill";
+      trashIcon.title = "Excluir";
+      trashIcon.addEventListener("click", () => {
+        const resposta = confirm(
+          "Tem certeza de que deseja excluir este item?"
+        );
+        if (resposta) {
+          taskContainer.remove();
         }
-
-        trashIconContainer.appendChild(trashIcon);
-        taskContainer.appendChild(trashIconContainer);
-
-        columnCards.appendChild(taskContainer);
       });
-    }
+
+      const isDarkMode = document.body.classList.contains("dark");
+
+      if (isDarkMode) {
+        taskDiv.classList.add("dark");
+        trashIcon.classList.add("dark");
+      } else {
+        taskDiv.classList.remove("dark");
+        trashIcon.classList.remove("dark");
+      }
+
+      trashIconContainer.appendChild(trashIcon);
+      taskContainer.appendChild(trashIconContainer);
+
+      columnCards.appendChild(taskContainer);
+    });
+    
+    addDragAndDropListenersToCards(columnCards);
+
   } catch (error) {
     console.error(
       `Erro ao carregar as tasks para a coluna ${columnId}:`,
@@ -488,7 +489,9 @@ const dragEnter = ({ target }) => {
 };
 
 const dragLeave = ({ target }) => {
-  target.classList.remove("column--highlight");
+  if (target.classList.contains("column__cards")) {
+    target.classList.remove("column--highlight");
+  }
 };
 
 const drop = ({ target }) => {
@@ -498,7 +501,8 @@ const drop = ({ target }) => {
   }
 };
 
-const addDragAndDropListeners = (columnCards) => {
+const addDragAndDropListenersToCards = (columnCards) => {
+  columnCards.draggable = "true";
   columnCards.addEventListener("dragover", dragOver);
   columnCards.addEventListener("dragenter", dragEnter);
   columnCards.addEventListener("dragleave", dragLeave);
@@ -516,19 +520,29 @@ const dragOverColumn = (event) => {
   event.preventDefault();
 };
 
-const dropColumn = (event) => {
-  event.preventDefault();
-  const targetColumn = event.target.closest(".column");
-  const columnsContainer = document.querySelector(".columns");
+const dragEnterColumn = ({ target }) => {
+  if (target.classList.contains("column") && target !== draggedColumn) {
+    target.classList.add("column--highlight");
+  }
+};
 
-  if (targetColumn && draggedColumn !== targetColumn) {
-    const bounding = targetColumn.getBoundingClientRect();
-    const offset = event.clientY - bounding.top + bounding.height / 2;
+const dragLeaveColumn = ({ target }) => {
+  if (target.classList.contains("column")) {
+    target.classList.remove("column--highlight");
+  }
+};
 
-    if (offset > 0) {
-      columnsContainer.insertBefore(draggedColumn, targetColumn.nextSibling);
+const dropColumn = ({ target }) => {
+  if (target.classList.contains("column") && target !== draggedColumn) {
+    target.classList.remove("column--highlight");
+    const parent = target.parentNode;
+    const targetIndex = Array.from(parent.children).indexOf(target);
+    const draggedIndex = Array.from(parent.children).indexOf(draggedColumn);
+
+    if (draggedIndex < targetIndex) {
+      parent.insertBefore(draggedColumn, target.nextSibling);
     } else {
-      columnsContainer.insertBefore(draggedColumn, targetColumn);
+      parent.insertBefore(draggedColumn, target);
     }
   }
 };
@@ -537,6 +551,8 @@ const addDragAndDropListenersToColumns = (columnSection) => {
   columnSection.draggable = true;
   columnSection.addEventListener("dragstart", dragStartColumn);
   columnSection.addEventListener("dragover", dragOverColumn);
+  columnSection.addEventListener("dragenter", dragEnterColumn);
+  columnSection.addEventListener("dragleave", dragLeaveColumn);
   columnSection.addEventListener("drop", dropColumn);
 };
 
