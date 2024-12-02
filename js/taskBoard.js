@@ -396,6 +396,7 @@ function createCard(columnCards) {
     }
 
     inputContainer.remove();
+    addDragAndDropListenersToCards(columnCards);
   });
 
   titleInput.focus();
