@@ -366,6 +366,11 @@ header.dark {
   background-color:#FDC797;
 }
 
+p{
+  font-size: 10px;
+  margin: auto;
+  }
+
 .form-container{
   background-color: #8F477B;
   width: 350px;

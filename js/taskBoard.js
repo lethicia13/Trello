@@ -108,8 +108,6 @@ async function carregarColunas(boardId, columnsSection) {
         columnCards.classList.remove("dark");
       }
 
-      addCardButton.addEventListener("click", () => createCard(columnCards));
-
       columnSection.appendChild(excluirDiv);
       columnSection.appendChild(addCardButton);
       columnSection.appendChild(columnCards);
@@ -118,6 +116,10 @@ async function carregarColunas(boardId, columnsSection) {
       addDragAndDropListenersToColumns(columnSection);
 
       await carregarTasks(column.Id, columnCards);
+      const columnId = column.Id;
+      addCardButton.addEventListener("click", () =>
+        createCard(columnCards, columnId)
+      );
     }
   } catch (error) {
     console.error("Erro ao carregar as colunas:", error);
@@ -137,8 +139,6 @@ async function carregarTasks(columnId, columnCards) {
 
     const tasksData = await response.json();
     console.log(`Tasks para a coluna ${columnId}:`, tasksData);
-
-    localStorage.setItem("columnId", columnId);
 
     tasksData.forEach((task) => {
       const taskContainer = document.createElement("div");
@@ -221,7 +221,7 @@ function applyTheme(data) {
       "card__description-input",
       "add-column-btn",
       "new-column-title",
-      "form-container"
+      "form-container",
     ];
 
     classNames.forEach((className) => {
@@ -286,7 +286,7 @@ function populateDropdown(data, dropdownContent, columnsSection) {
   });
 }
 
-function createCard(columnCards) {
+function createCard(columnCards, columnId) {
   const titleInput = document.createElement("textarea");
   titleInput.className = "card__title-input";
   titleInput.placeholder = "Digite o título aqui";
@@ -305,7 +305,7 @@ function createCard(columnCards) {
 
   const sendButton = document.createElement("button");
   sendButton.textContent = "Criar Card";
-  sendButton.classList = "add-card-btn";
+  sendButton.className = "add-card-btn";
   inputContainer.appendChild(sendButton);
 
   columnCards.appendChild(inputContainer);
@@ -321,6 +321,8 @@ function createCard(columnCards) {
       inputContainer.remove();
     }
   });
+
+  postCard(titleInput, descriptionInput, sendButton, columnId);
 
   const isDarkMode = document.body.classList.contains("dark");
 
@@ -406,6 +408,130 @@ function createCard(columnCards) {
   titleInput.focus();
 }
 
+function postCard(titleInput, descriptionInput, sendButton, columnId) {
+  sendButton.addEventListener("click", async (event) => {
+    event.preventDefault();
+
+    const taskName = titleInput.value.trim();
+    const taskDescription = descriptionInput.value.trim();
+
+    if (!taskName) {
+      alert("O nome da task não pode estar vazio!");
+      return;
+    }
+
+    const taskData = {
+      Id: Date.now(),
+      ColumnId: columnId,
+      Title: taskName,
+      Description: taskDescription|| "",
+      IsActive: false,
+      CreatedBy: 6,
+      UpdatedBy: 2,
+    };
+
+    try {
+      const response = await fetch(
+        "https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Task",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(taskData),
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Tarefa criada com sucesso:", result);
+        alert("Tarefa criada com sucesso!");
+      } else {
+        console.error("Erro ao criar a Tarefa:", response.statusText);
+        alert("Erro ao criar a Tarefa. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+      alert("Ocorreu um erro ao criar a Tarefa. Verifique sua conexão.");
+    }
+  });
+}
+
+function createBoardButton() {
+  const createBoardButton = document.getElementById("createBoard");
+  const formContainer = document.getElementById("form-container");
+
+  createBoardButton.addEventListener("click", showCreateBoard);
+
+  function showCreateBoard() {
+    formContainer.classList.remove("hidden");
+
+    document.addEventListener("click", hideFormOnClickOutside);
+  }
+
+  function hideFormOnClickOutside(event) {
+    if (
+      !formContainer.contains(event.target) &&
+      event.target !== createBoardButton
+    ) {
+      formContainer.classList.add("hidden");
+    }
+  }
+}
+
+async function createBoard() {
+  const submitBoardButton = document.getElementById("submitBoard");
+  const boardNameInput = document.getElementById("boardName");
+  const descriptionInput = document.getElementById("boardDescription");
+
+  submitBoardButton.addEventListener("click", async (event) => {
+    event.preventDefault();
+
+    const boardName = boardNameInput.value.trim();
+    const boardDescription = descriptionInput.value.trim();
+
+    if (!boardName) {
+      alert("O nome da board não pode estar vazio!");
+      return;
+    }
+
+    const boardData = {
+        "Id": Date.now(),
+        "Name": boardName,
+        "Description": boardDescription,
+        "HexaBackgroundCoor": "",
+        "IsActive": false,
+        "CreatedBy": 6,
+        "UpdatedBy": 2
+    };
+
+    try {
+      const response = await fetch(
+        "https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Board",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(boardData),
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Board criada com sucesso:", result);
+        alert("Board criada com sucesso!");
+      } else {
+        console.error("Erro ao criar a board:", response.statusText);
+        alert("Erro ao criar a board. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+      alert("Ocorreu um erro ao criar a board. Verifique sua conexão.");
+    }
+  });
+}
+
 function botaoCriarColuna() {
   const addColumnBtn = document.getElementById("submitColumnButton");
   const newColumnTitleInput = document.getElementById("submitColumnInput");
@@ -473,6 +599,59 @@ function criarColuna(title) {
 
   addCardButton.addEventListener("click", () => createCard(columnCards));
   addDragAndDropListenersToColumns(columnSection);
+}
+
+async function createColumn() {
+  const submitColumnButton = document.getElementById("submitColumnButton");
+  const submitColumnInput = document.getElementById("submitColumnInput");
+
+  submitColumnButton.addEventListener("click", async (event) => {
+    event.preventDefault();
+
+    const columnName = submitColumnInput.value.trim();
+
+    if (!columnName) {
+      alert("O nome da column não pode estar vazio!");
+      return;
+    }
+
+    const boardId = localStorage.getItem("boardId");
+
+    const columnData = {
+      Id: Date.now(),
+      BoardId: boardId,
+      Name: columnName|| "",
+      Position: 0,
+      IsActive: false,
+      CreatedBy: 6,
+      UpdatedBy: 2,
+    };
+
+    try {
+      const response = await fetch(
+        "https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Column",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(columnData),
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Coluna criada com sucesso:", result);
+        alert("Coluna criada com sucesso!");
+      } else {
+        console.error("Erro ao criar a Coluna:", response.statusText);
+        alert("Erro ao criar a Coluna. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+      alert("Ocorreu um erro ao criar a Coluna. Verifique sua conexão.");
+    }
+  });
 }
 
 let draggedCard;
@@ -633,3 +812,6 @@ botaoCriarColuna();
 recuperarDados();
 carregarDropdown();
 carregarTemas();
+createColumn();
+createBoard();
+createBoardButton();
