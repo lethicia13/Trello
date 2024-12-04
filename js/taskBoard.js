@@ -59,6 +59,8 @@ async function carregarColunas(boardId, columnsSection) {
     main.classList.remove("hidden");
     columnsSection.innerHTML = "";
 
+    localStorage.setItem("boardId", boardId);
+
     for (const column of columnsData) {
       const columnSection = document.createElement("section");
       columnSection.className = "column";
@@ -136,6 +138,8 @@ async function carregarTasks(columnId, columnCards) {
     const tasksData = await response.json();
     console.log(`Tasks para a coluna ${columnId}:`, tasksData);
 
+    localStorage.setItem("columnId", columnId);
+
     tasksData.forEach((task) => {
       const taskContainer = document.createElement("div");
       taskContainer.classList.add("card-container");
@@ -184,9 +188,8 @@ async function carregarTasks(columnId, columnCards) {
 
       columnCards.appendChild(taskContainer);
     });
-    
-    addDragAndDropListenersToCards(columnCards);
 
+    addDragAndDropListenersToCards(columnCards);
   } catch (error) {
     console.error(
       `Erro ao carregar as tasks para a coluna ${columnId}:`,
@@ -218,6 +221,7 @@ function applyTheme(data) {
       "card__description-input",
       "add-column-btn",
       "new-column-title",
+      "form-container"
     ];
 
     classNames.forEach((className) => {
@@ -403,15 +407,14 @@ function createCard(columnCards) {
 }
 
 function botaoCriarColuna() {
-  const addColumnBtn = document.getElementById("add-column-btn");
-  const newColumnTitleInput = document.getElementById("new-column-title");
+  const addColumnBtn = document.getElementById("submitColumnButton");
+  const newColumnTitleInput = document.getElementById("submitColumnInput");
 
   addColumnBtn.addEventListener("click", () => {
     const title = newColumnTitleInput.value.trim();
 
     if (title) {
       criarColuna(title);
-      newColumnTitleInput.value = "";
     } else {
       alert("Por favor, insira um título para a coluna.");
     }
@@ -591,6 +594,7 @@ function trilhoDark() {
       "card",
       "add-column-btn",
       "new-column-title",
+      "form-container",
     ];
 
     classNames.forEach((className) => {

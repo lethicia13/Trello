@@ -205,6 +205,7 @@ header {
   background-color: #F2CBE0;
   color: #8F477B;
   width: 200px;
+  padding: 5px;
 }
 
 .column--highlight {
@@ -363,4 +364,17 @@ header.dark {
 
 .column--highlight.dark {
   background-color:#FDC797;
+}
+
+.form-container{
+  background-color: #8F477B;
+  width: 350px;
+  padding: 20px;
+  margin: 6px;
+  border-radius: 10px;
+  color: #d6c9b4;
+}
+
+.form-container.dark{
+  background-color: #021334;
 }
