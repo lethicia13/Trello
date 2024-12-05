@@ -23,7 +23,7 @@
             <li><a class="dropdown-item" href="#"></a></li>
           </ul>
         </div>
-        <button class="dropbtn" id="createBoard">Create Board</button>
+        <button class="dropbtn" id="openModal">Criar Board</button>
       </div>
       <div class="info-logout-darkmode" id="info-logout-darkmode">
         <p id="nomeFulana">Olá, fulana</p>
@@ -33,13 +33,47 @@
         </div>
       </div>
     </header>
-    <div class="form-container hidden" id="form-container">
-        <input type="text" id="boardName" class="card__title-input" name="name" placeholder="Nome da board">
-        <input type="text" id="boardDescription" class="card__title-input" name="name" placeholder="Descrição da board">
-        <button type="submit" id="submitBoard" class="add-card-btn">Criar Board</button>
-      <div class="message" id="responseMessage"></div>
-  </div>
+    <div id="modalCriarBoard" class="modal">
+      <div class="modal-content">
+        <h1>Crie uma nova board:</h1>
+        <input
+          type="text"
+          id="boardName"
+          class="card__title-input"
+          name="name"
+          placeholder="Nome da board"
+        />
+        <input
+          type="text"
+          id="boardDescription"
+          class="card__title-input"
+          name="name"
+          placeholder="Descrição da board"
+        />
+        <button type="submit" id="submitBoard" class="add-card-btn">
+          Criar Board
+        </button>
+      </div>
+    </div>
     <main class="hidden">
+      <section class="add-column">
+        <button class="add-card-btn" id="excluirBoard">
+          <i class="bi bi-trash3-fill" id="trash1"></i> Excluir Board
+        </button>
+        <button class="add-card-btn" id="adicionarColuna">
+          <i class="bi bi-plus-lg"></i> Adicionar Coluna
+        </button>
+      </section>
+      <div class="form-container hidden" id="formAdicionarColuna">
+        <input
+          class="card__title-input"
+          id="submitColumnInput"
+          type="text"
+          placeholder="Digite o título da nova coluna"
+          aria-label="Título da nova coluna"
+        />
+        <button id="submitColumnButton" class="add-card-btn">Adicionar</button>
+      </div>
       <section class="columns">
         <section class="column" id="column1">
           <div class="excluir">
@@ -51,16 +85,6 @@
           <button class="add-card-btn" id="novatarefa1">Nova tarefa</button>
           <section class="column__cards"></section>
         </section>
-      </section>
-      <section class="add-column">
-        <input
-          class="new-column-title"
-          id="submitColumnInput"
-          type="text"
-          placeholder="Digite o título da nova coluna"
-          aria-label="Título da nova coluna"
-        />
-        <button id="submitColumnButton" class="add-column-btn">Adicionar</button>
       </section>
     </main>
     <script src="/js/taskBoard.js"></script>
