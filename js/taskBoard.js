@@ -84,7 +84,7 @@ function applyTheme(data) {
     "column__title",
     "bi-trash3-fill",
     "bi-pencil-square", 
-    "bi-plus-lg",
+    "bi-file-plus-fill",
     "add-card-btn",
     "column__cards",
     "card",
@@ -681,6 +681,11 @@ function editarTasks() {
 
     const taskName = editTaskName.value.trim();
     const taskDescription = editTaskDescription.value.trim();
+
+    if(!taskName){
+      alert("Insira um nome para a task");
+        return;
+    }
 
     const editTaskData = {
       Id: taskId,

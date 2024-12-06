@@ -270,6 +270,10 @@ h1{
   cursor: url(/imagem/cursor2.png), pointer;  
 }
 
+.add-card-btn:hover .bi-file-plus-fill, .add-card-btn:hover .bi-trash3-fill{
+  color:#CB6D9A;
+}
+
 .add-column {
   display: flex;
   flex-direction: row;
@@ -279,7 +283,7 @@ h1{
 }
 
 .bi-trash3-fill,
-.excluir, .bi-pencil-square, .bi-plus-lg {
+.excluir, .bi-pencil-square, .bi-file-plus-fill {
   width: 8%;
   cursor: url(/imagem/cursor2.png), pointer;  
   color:#d6c9b4;
@@ -364,7 +368,7 @@ header.dark {
 }
 
 .bi-trash3-fill.dark,
-.excluir.dark, .bi-pencil-square.dark, .bi-plus-lg {
+.excluir.dark, .bi-pencil-square.dark, .bi-file-plus-fill.dark {
   color: #FDC797;
   cursor: url(/imagem/cursordark2.png), pointer;
 }
@@ -386,6 +390,10 @@ header.dark {
 .add-column-btn.dark:hover {
   background-color: #FDC797;
   color: #275A91;
+}
+
+.add-card-btn.dark:hover .bi-file-plus-fill.dark, .add-card-btn.dark:hover .bi-trash3-fill.dark{
+  color:#275A91;
 }
 
 .card__title-input.dark,
