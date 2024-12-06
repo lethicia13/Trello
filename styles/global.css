@@ -401,3 +401,7 @@ h1.dark{
   flex-direction: column;
   align-items: center;
 }
+
+.modal-content.dark{
+  background-color: #012A61;
+}

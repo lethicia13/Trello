@@ -20,6 +20,39 @@ async function carregarTemas() {
   }
 }
 
+function trilhoDark(data, personId) {
+  const trilho = document.getElementById("trilho");
+
+  trilho.addEventListener("click", async () => {
+    let newThemeId = data.DefaultThemeId === 1 ? 2 : 1;
+    const themeConfig = { ThemeId: newThemeId };
+
+    try {
+      const response = await fetch(
+        `https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/ConfigPersonTheme?PersonId=${personId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(themeConfig),
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error("Erro ao trocar o tema na API");
+      }
+
+      data.DefaultThemeId = newThemeId;
+      applyTheme(data);
+
+      console.log("Tema trocado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao trocar o tema:", error);
+    }
+  });
+}
+
 function applyTheme(data) {
   const classNames = [
     "dropdown",
@@ -41,13 +74,14 @@ function applyTheme(data) {
     "add-column-btn",
     "new-column-title",
     "modal",
+    "modal-content",
   ];
 
   if (data.DefaultThemeId === 1) {
     classNames.forEach((className) => {
       const elements = document.getElementsByClassName(className);
       Array.from(elements).forEach((element) => {
-        element.classList.toggle("dark");
+        element.classList.add("dark");
       });
     });
 
@@ -55,17 +89,9 @@ function applyTheme(data) {
     const header = document.querySelector("header");
     const h1 = document.querySelector("h1");
 
-    if (body) {
-      body.classList.toggle("dark");
-    }
-
-    if (header) {
-      header.classList.toggle("dark");
-    }
-
-    if (h1) {
-      h1.classList.toggle("dark");
-    }
+    body.classList.add("dark");
+    header.classList.add("dark");
+    h1.classList.add("dark");
 
     console.log("Tema 'dark' aplicado aos elementos especificados.");
   } else if (data.DefaultThemeId === 2) {
@@ -80,48 +106,12 @@ function applyTheme(data) {
     const header = document.querySelector("header");
     const h1 = document.querySelector("h1");
 
-    if (body) {
-      body.classList.remove("dark");
-    }
-
-    if (header) {
-      header.classList.remove("dark");
-    }
-
-    if (h1) {
-      h1.classList.remove("dark");
-    }
+    body.classList.remove("dark");
+    header.classList.remove("dark");
+    h1.classList.remove("dark");
 
     console.log("Tema 'dark' removido dos elementos especificados.");
   }
-}
-
-function trilhoDark(data, personId) {
-  const trilho = document.getElementById("trilho");
-
-  trilho.addEventListener("click", async () => {
-    let themeConfig = {
-      ThemeId: data.DefaultThemeId === 1 ? 2 : 1,
-    };
-    console.log(themeConfig);
-
-    fetch(
-      `https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/ConfigPersonTheme?PersonId=${personId}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(themeConfig),
-      }
-    )
-      .then((data) => {
-        console.log("Tema trocado com sucesso:", data);
-      })
-      .catch((error) => {
-        console.error("Erro ao trocar o tema:", error);
-      });
-  });
 }
 
 async function carregarDropdown() {
