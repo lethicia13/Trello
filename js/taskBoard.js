@@ -1,7 +1,6 @@
 async function carregarTemas() {
   const user = JSON.parse(localStorage.getItem("user"));
   const personId = user.id;
-  console.log(personId);
 
   try {
     const response = await fetch(
@@ -97,7 +96,6 @@ function applyTheme(data) {
   }
 }
 
-
 function trilhoDark(data, personId) {
   const trilho = document.getElementById("trilho");
 
@@ -123,7 +121,6 @@ function trilhoDark(data, personId) {
       .catch((error) => {
         console.error("Erro ao trocar o tema:", error);
       });
-      applyTheme(data);
   });
 }
 
@@ -141,7 +138,6 @@ async function carregarDropdown() {
     }
 
     const data = await response.json();
-    console.log(data);
 
     populateDropdown(data, dropdownContent, columnsSection);
   } catch (error) {
@@ -299,7 +295,6 @@ async function carregarColunas(
     }
 
     const columnsData = await response.json();
-    console.log(columnsData);
     const main = document.querySelector("main");
     main.classList.remove("hidden");
     columnsSection.innerHTML = "";
@@ -325,7 +320,9 @@ async function carregarColunas(
       excluirIcon.className = "bi bi-trash3-fill";
 
       excluirIcon.addEventListener("click", () => {
-        const resposta = confirm("Tem certeza de que deseja excluir este item?");
+        const resposta = confirm(
+          "Tem certeza de que deseja excluir este item?"
+        );
         if (resposta) {
           excluirColuna();
         }
@@ -370,7 +367,6 @@ async function carregarColunas(
 
       await carregarTasks(column.Id, columnCards);
       const columnId = column.Id;
-      console.log(columnId);
       columnSection.addEventListener("mouseover", () => {
         localStorage.setItem("columnId", column.Id);
         localStorage.setItem("columnName", column.Name);
@@ -396,13 +392,17 @@ async function carregarTasks(columnId, columnCards) {
     }
 
     const tasksData = await response.json();
-    console.log(`Tasks para a coluna ${columnId}:`, tasksData);
 
     tasksData.forEach((task) => {
       const taskContainer = document.createElement("div");
       taskContainer.classList.add("card-container");
       taskContainer.draggable = true;
       taskContainer.addEventListener("dragstart", dragStart);
+
+      taskContainer.addEventListener("mouseover", () => {
+        localStorage.setItem("taskId", task.Id);
+        console.log(task.Id);
+      });
 
       const taskDiv = document.createElement("div");
       taskDiv.classList.add("card");
@@ -424,10 +424,10 @@ async function carregarTasks(columnId, columnCards) {
       trashIcon.title = "Excluir";
       trashIcon.addEventListener("click", () => {
         const resposta = confirm(
-          "Tem certeza de que deseja excluir este item?"
+          "Tem certeza de que deseja excluir essa task?"
         );
         if (resposta) {
-          taskContainer.remove();
+          excluirTasks();
         }
       });
 
@@ -456,6 +456,31 @@ async function carregarTasks(columnId, columnCards) {
     const tasksContainer = document.getElementById(`tasks-${columnId}`);
     tasksContainer.innerHTML = "<p>Erro ao carregar as tasks</p>";
   }
+}
+
+function excluirTasks() {
+  const taskId = localStorage.getItem("taskId");
+
+  const taskData = {
+    TaskId: taskId,
+  };
+
+  fetch(
+    `https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Task?TaskId=${taskId}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(taskData),
+    }
+  )
+    .then((data) => {
+      console.log("Task deletada com sucesso:", data);
+    })
+    .catch((error) => {
+      console.error("Erro ao arquivar a coluna:", error);
+    });
 }
 
 function recuperarDados() {
@@ -490,20 +515,18 @@ function botaoCriarColuna() {
 }
 
 function adicionarColunaFunction() {
-  const adicionarColuna = document.getElementById("adicionarColuna");
-  const form = document.getElementById("formAdicionarColuna");
+  const modal = document.getElementById("formAdicionarColuna");
+  const openModalButton = document.getElementById("adicionarColuna");
 
-  adicionarColuna.addEventListener("click", () => {
-    form.classList.remove("hidden");
+  openModalButton.addEventListener("click", () => {
+    modal.style.display = "flex";
   });
 
-  document.addEventListener("click", hideFormOnClickOutside);
-
-  function hideFormOnClickOutside(event) {
-    if (!form.contains(event.target) && event.target !== adicionarColuna) {
-      form.classList.add("hidden");
+  window.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      modal.style.display = "none";
     }
-  }
+  });
 }
 
 function criarColuna(title) {
@@ -618,37 +641,34 @@ async function createColumn() {
 }
 
 async function excluirColuna() {
-    const boardId = localStorage.getItem("boardId");
-    const columnId = localStorage.getItem("columnId");
-    const columnName = localStorage.getItem("columnName");
+  const boardId = localStorage.getItem("boardId");
+  const columnId = localStorage.getItem("columnId");
 
-    const columnData = {
-      Id: columnId,
-      BoardId: boardId,
-      Name: columnName,
-      Position: 0,
-      IsActive: false,
-      CreatedBy: 2,
-      UpdatedBy: 6,
-    };
+  const columnData = {
+    ColumnId: columnId,
+  };
 
-    fetch(
-      "https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Column",
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(columnData),
-      }
-    )
-      .then((data) => {
-        console.log("Coluna arquivado com sucesso:", data);
-      })
-      .catch((error) => {
-        console.error("Erro ao arquivar a coluna:", error);
-      });
-  }
+  fetch(
+    `https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Column?ColumnId=${columnId}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(columnData),
+    }
+  )
+    .then((data) => {
+      console.log("Coluna arquivado com sucesso:", data);
+      const boardName = localStorage.getItem("boardName");
+      const boardDescription = localStorage.getItem("boardDescription");
+      const columnsSection = document.querySelector(".columns");
+      carregarColunas(boardId, boardName, boardDescription, columnsSection);
+    })
+    .catch((error) => {
+      console.error("Erro ao arquivar a coluna:", error);
+    });
+}
 
 function createCard(columnCards, columnId) {
   const titleInput = document.createElement("textarea");
