@@ -17,7 +17,7 @@
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            Board Kanban
+            Selecionar Board
           </button>
           <ul class="dropdown-content" id="dropdown-content">
             <li><a class="dropdown-item" href="#"></a></li>
@@ -52,6 +52,28 @@
         />
         <button type="submit" id="submitBoard" class="add-card-btn">
           Criar Board
+        </button>
+      </div>
+    </div>
+    <div id="modalEditarTask" class="modal">
+      <div class="modal-content">
+        <h1>Edite sua task:</h1>
+        <input
+          type="text"
+          id="editTaskName"
+          class="card__title-input"
+          name="name"
+          placeholder="Nome da task"
+        />
+        <input
+          type="text"
+          id="editTaskDescription"
+          class="card__title-input"
+          name="name"
+          placeholder="Descrição da task"
+        />
+        <button type="submit" id="editBoard" class="add-card-btn">
+          Editar task
         </button>
       </div>
     </div>

@@ -82,7 +82,9 @@ function applyTheme(data) {
     "column",
     "excluir",
     "column__title",
-    "bi bi-trash3-fill",
+    "bi-trash3-fill",
+    "bi-pencil-square", 
+    "bi-plus-lg",
     "add-card-btn",
     "column__cards",
     "card",
@@ -569,6 +571,20 @@ async function carregarTasks(columnId, columnCards) {
       const trashIconContainer = document.createElement("div");
       trashIconContainer.classList.add("trash-container");
 
+      const editIcon = document.createElement("i");
+      editIcon.classList = "bi bi-pencil-square";
+      editIcon.addEventListener("click", () => {
+        const modal = document.getElementById("modalEditarTask");
+
+        modal.style.display = "flex";
+
+        window.addEventListener("click", (event) => {
+          if (event.target === modal) {
+            modal.style.display = "none";
+          }
+        });
+      });
+
       const trashIcon = document.createElement("i");
       trashIcon.classList = "bi bi-trash3-fill";
       trashIcon.title = "Excluir";
@@ -586,11 +602,14 @@ async function carregarTasks(columnId, columnCards) {
       if (isDarkMode) {
         taskDiv.classList.add("dark");
         trashIcon.classList.add("dark");
+        editIcon.classList.add("dark");
       } else {
         taskDiv.classList.remove("dark");
         trashIcon.classList.remove("dark");
+        editIcon.classList.remove("dark");
       }
 
+      trashIconContainer.appendChild(editIcon);
       trashIconContainer.appendChild(trashIcon);
       taskContainer.appendChild(trashIconContainer);
 
@@ -648,6 +667,48 @@ function postCard(titleInput, descriptionInput, sendButton, columnId) {
       console.error("Erro na requisição:", error);
       alert("Ocorreu um erro ao criar a Tarefa. Verifique sua conexão.");
     }
+  });
+}
+
+function editarTasks() {
+  const editarTasksButton = document.getElementById("editBoard");
+
+  editarTasksButton.addEventListener("click", () => {
+    const taskId = localStorage.getItem("taskId");
+    const columnId = localStorage.getItem("columnId");
+    const editTaskName = document.getElementById("editTaskName");
+    const editTaskDescription = document.getElementById("editTaskDescription");
+
+    const taskName = editTaskName.value.trim();
+    const taskDescription = editTaskDescription.value.trim();
+
+    const editTaskData = {
+      Id: taskId,
+      ColumnId: columnId,
+      Title: taskName || " ",
+      Description: taskDescription || " ",
+    };
+
+    fetch(
+      "https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Task",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editTaskData),
+      }
+    )
+      .then((data) => {
+        console.log("Task editada com sucesso:", data);
+        const modal = document.getElementById("modalEditarTask")
+        modal.style.display = "none";
+        const boardId = localStorage.getItem("boardId");
+        fetchColunas(boardId);
+      })
+      .catch((error) => {
+        console.error("Erro ao editar a task:", error);
+      });
   });
 }
 
@@ -776,3 +837,4 @@ createBoard();
 createBoardButton();
 adicionarColunaFunction();
 excluirBoardButton();
+editarTasks();

@@ -211,6 +211,12 @@ h1{
   align-items: end;
 }
 
+.trash-container{
+  display: flex;
+  justify-content: space-between;
+  width: 220px;
+}
+
 .card {
   width: 100%;
   min-height: 70px;
@@ -272,11 +278,8 @@ h1{
   margin-top: 20px;
 }
 
-.bi-plus-lg{
-  color: #d6c9b4;
-}
-
-i {
+.bi-trash3-fill,
+.excluir, .bi-pencil-square, .bi-plus-lg {
   width: 8%;
   cursor: url(/imagem/cursor2.png), pointer;  
   color:#d6c9b4;
@@ -361,7 +364,7 @@ header.dark {
 }
 
 .bi-trash3-fill.dark,
-.excluir.dark {
+.excluir.dark, .bi-pencil-square.dark, .bi-plus-lg {
   color: #FDC797;
   cursor: url(/imagem/cursordark2.png), pointer;
 }
