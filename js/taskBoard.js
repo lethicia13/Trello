@@ -20,6 +20,22 @@ async function carregarTemas() {
   }
 }
 
+function recuperarDados() {
+  const userData = localStorage.getItem("user");
+
+  if (userData) {
+    const user = JSON.parse(userData);
+    console.log(user);
+
+    const userNameElement = document.getElementById("nomeFulana");
+
+    const primeiroNome = user.nome.split(" ")[0];
+    userNameElement.innerHTML = `Olá, ${primeiroNome}!`;
+  } else {
+    userNameElement.innerHTML = "Bem vindo!";
+  }
+}
+
 function trilhoDark(data, personId) {
   const trilho = document.getElementById("trilho");
 
@@ -38,7 +54,7 @@ function trilhoDark(data, personId) {
           body: JSON.stringify(themeConfig),
         }
       );
-      
+
       if (!response.ok) {
         throw new Error("Erro ao trocar o tema na API");
       }
@@ -69,6 +85,7 @@ function applyTheme(data) {
     "bi bi-trash3-fill",
     "add-card-btn",
     "column__cards",
+    "card",
     "card__title-input",
     "card__description-input",
     "add-column-btn",
@@ -93,7 +110,7 @@ function applyTheme(data) {
     header.classList.add("dark");
     h1.classList.add("dark");
 
-    console.log("Tema 'dark' aplicado aos elementos especificados.");
+    console.log("Tema dark aplicado aos elementos especificados.");
   } else if (data.DefaultThemeId === 2) {
     classNames.forEach((className) => {
       const elements = document.getElementsByClassName(className);
@@ -110,14 +127,11 @@ function applyTheme(data) {
     header.classList.remove("dark");
     h1.classList.remove("dark");
 
-    console.log("Tema 'dark' removido dos elementos especificados.");
+    console.log("Tema dark removido dos elementos especificados.");
   }
 }
 
 async function carregarDropdown() {
-  const dropdownContent = document.getElementById("dropdown-content");
-  const columnsSection = document.querySelector(".columns");
-
   try {
     const response = await fetch(
       "https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Boards"
@@ -128,15 +142,14 @@ async function carregarDropdown() {
     }
 
     const data = await response.json();
-
-    populateDropdown(data, dropdownContent, columnsSection);
+    populateDropdown(data);
   } catch (error) {
     console.error("Erro ao carregar os boards:", error);
-    dropdownContent.innerHTML = "<li>Erro ao carregar dados</li>";
   }
 }
 
-function populateDropdown(data, dropdownContent, columnsSection) {
+function populateDropdown(data) {
+  const dropdownContent = document.getElementById("dropdown-content");
   dropdownContent.innerHTML = "";
 
   data.forEach((board) => {
@@ -146,7 +159,7 @@ function populateDropdown(data, dropdownContent, columnsSection) {
     link.textContent = board.Name;
 
     link.addEventListener("click", () => {
-      carregarColunas(board.Id, board.Name, board.Description, columnsSection);
+    fetchColunas(board.Id);
     });
 
     listItem.appendChild(link);
@@ -185,6 +198,16 @@ async function createBoard() {
       return;
     }
 
+    if (boardName.length < 10) {
+      alert("O nome da board precisa ter no mínimo 10 caracteres");
+      return;
+    }
+
+    if (!boardDescription) {
+      alert("A descrição da board não pode estar vazia!");
+      return;
+    }
+
     const boardData = {
       Id: Date.now(),
       Name: boardName,
@@ -210,7 +233,6 @@ async function createBoard() {
       if (response.ok) {
         const result = await response.json();
         console.log("Board criada com sucesso:", result);
-        alert("Board criada com sucesso!");
         window.location.href = "/telas/taskBoard.html";
       } else {
         console.error("Erro ao criar a board:", response.statusText);
@@ -228,53 +250,40 @@ function excluirBoardButton() {
   excluirButton.addEventListener("click", () => {
     const isConfirmed = window.confirm("Deseja excluir essa board?");
     if (isConfirmed) {
-      arquivarBoard();
+      excluirBoard();
     } else {
       return;
     }
   });
 }
 
-function arquivarBoard() {
+function excluirBoard() {
   const boardId = localStorage.getItem("boardId");
-  const boardName = localStorage.getItem("boardName");
-  const boardDescription = localStorage.getItem("boardDescription");
 
   const boardData = {
-    Id: boardId,
-    Name: boardName,
-    Description: boardDescription,
-    HexaBackgroundCoor: "",
-    IsActive: false,
-    CreatedBy: 2,
-    UpdatedBy: 6,
+    BoardId: boardId,
   };
 
   fetch(
-    "https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Board",
+    `https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Board?BoardId=${boardId}`,
     {
-      method: "PUT",
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(boardData),
     }
   )
-    .then((response) => response.json())
     .then((data) => {
-      console.log("Board arquivado com sucesso:", data);
+      console.log("Board excluida com sucesso:", data);
+      window.location.href = "/telas/taskBoard.html";
     })
     .catch((error) => {
-      console.error("Erro ao arquivar a board:", error);
+      console.error("Erro ao excluir a board:", error);
     });
 }
 
-async function carregarColunas(
-  boardId,
-  boardName,
-  boardDescription,
-  columnsSection
-) {
+async function fetchColunas(boardId) {
   try {
     const response = await fetch(
       `https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/ColumnByBoardId?BoardId=${boardId}`
@@ -285,90 +294,195 @@ async function carregarColunas(
     }
 
     const columnsData = await response.json();
-    const main = document.querySelector("main");
-    main.classList.remove("hidden");
-    columnsSection.innerHTML = "";
-
     localStorage.setItem("boardId", boardId);
-    localStorage.setItem("boardName", boardName);
-    localStorage.setItem("boardDescription", boardDescription);
-
-    for (const column of columnsData) {
-      const columnSection = document.createElement("section");
-      columnSection.className = "column";
-
-      const excluirDiv = document.createElement("div");
-      excluirDiv.className = "divExcluir";
-
-      const columnTitle = document.createElement("h2");
-      columnTitle.className = "column__title";
-      columnTitle.contentEditable = "true";
-      columnTitle.textContent = column.Name;
-      columnTitle.spellcheck = "false";
-
-      const excluirIcon = document.createElement("i");
-      excluirIcon.className = "bi bi-trash3-fill";
-
-      excluirIcon.addEventListener("click", () => {
-        const resposta = confirm(
-          "Tem certeza de que deseja excluir este item?"
-        );
-        if (resposta) {
-          excluirColuna();
-        }
-      });
-
-      excluirDiv.appendChild(columnTitle);
-      excluirDiv.appendChild(excluirIcon);
-
-      const addCardButton = document.createElement("button");
-      addCardButton.className = "add-card-btn";
-      addCardButton.textContent = "Nova tarefa";
-
-      const columnCards = document.createElement("section");
-      columnCards.className = "column__cards";
-      columnCards.id = `tasks-${column.Id}`;
-
-      columnCards.draggable = true;
-      columnCards.addEventListener("dragstart", dragStart);
-
-      const isDarkMode = document.body.classList.contains("dark");
-
-      if (isDarkMode) {
-        columnSection.classList.add("dark");
-        columnTitle.classList.add("dark");
-        excluirIcon.classList.add("dark");
-        addCardButton.classList.add("dark");
-        columnCards.classList.add("dark");
-      } else {
-        columnSection.classList.remove("dark");
-        columnTitle.classList.remove("dark");
-        excluirIcon.classList.remove("dark");
-        addCardButton.classList.remove("dark");
-        columnCards.classList.remove("dark");
-      }
-
-      columnSection.appendChild(excluirDiv);
-      columnSection.appendChild(addCardButton);
-      columnSection.appendChild(columnCards);
-
-      columnsSection.appendChild(columnSection);
-      addDragAndDropListenersToColumns(columnSection);
-
-      await carregarTasks(column.Id, columnCards);
-      const columnId = column.Id;
-      columnSection.addEventListener("mouseover", () => {
-        localStorage.setItem("columnId", column.Id);
-        localStorage.setItem("columnName", column.Name);
-      });
-      addCardButton.addEventListener("click", () =>
-        createCard(columnCards, columnId)
-      );
-    }
+    carregarColunas(columnsData);
   } catch (error) {
     console.error("Erro ao carregar as colunas:", error);
-    columnsSection.innerHTML = "<p>Erro ao carregar as colunas</p>";
   }
+}
+
+async function carregarColunas(columnsData) {
+  const main = document.querySelector("main");
+  main.classList.remove("hidden");
+  const columnsSection = document.querySelector(".columns");
+  columnsSection.innerHTML = "";
+
+  for (const column of columnsData) {
+    const columnSection = document.createElement("section");
+    columnSection.className = "column";
+
+    const excluirDiv = document.createElement("div");
+    excluirDiv.className = "divExcluir";
+
+    const columnTitle = document.createElement("h2");
+    columnTitle.className = "column__title";
+    columnTitle.contentEditable = "true";
+    columnTitle.textContent = column.Name;
+    columnTitle.spellcheck = "false";
+
+    const excluirIcon = document.createElement("i");
+    excluirIcon.className = "bi bi-trash3-fill";
+
+    excluirIcon.addEventListener("click", () => {
+      const resposta = confirm("Tem certeza de que deseja excluir este item?");
+      if (resposta) {
+        excluirColuna();
+      }
+    });
+
+    excluirDiv.appendChild(columnTitle);
+    excluirDiv.appendChild(excluirIcon);
+
+    const addCardButton = document.createElement("button");
+    addCardButton.className = "add-card-btn";
+    addCardButton.textContent = "Nova tarefa";
+
+    const columnCards = document.createElement("section");
+    columnCards.className = "column__cards";
+    columnCards.id = `tasks-${column.Id}`;
+
+    columnCards.draggable = true;
+    columnCards.addEventListener("dragstart", dragStart);
+
+    const isDarkMode = document.body.classList.contains("dark");
+
+    if (isDarkMode) {
+      columnSection.classList.add("dark");
+      columnTitle.classList.add("dark");
+      excluirIcon.classList.add("dark");
+      addCardButton.classList.add("dark");
+      columnCards.classList.add("dark");
+    } else {
+      columnSection.classList.remove("dark");
+      columnTitle.classList.remove("dark");
+      excluirIcon.classList.remove("dark");
+      addCardButton.classList.remove("dark");
+      columnCards.classList.remove("dark");
+    }
+
+    columnSection.appendChild(excluirDiv);
+    columnSection.appendChild(addCardButton);
+    columnSection.appendChild(columnCards);
+
+    columnsSection.appendChild(columnSection);
+    addDragAndDropListenersToColumns(columnSection);
+
+    
+    await carregarTasks(column.Id, columnCards);
+    columnSection.addEventListener("mouseover", () => {
+      localStorage.setItem("columnId", column.Id);
+      localStorage.setItem("columnName", column.Name);
+    });
+    addCardButton.addEventListener("click", () =>
+      createCard(columnCards, column.Id)
+    );
+  }
+}
+
+function botaoCriarColuna() {
+  const modal = document.getElementById("formAdicionarColuna");
+  const openModalButton = document.getElementById("adicionarColuna");
+
+  openModalButton.addEventListener("click", () => {
+    modal.style.display = "flex";
+  });
+
+  window.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  });
+}
+
+function adicionarColunaFunction() {
+  const addColumnBtn = document.getElementById("submitColumnButton");
+  const newColumnTitleInput = document.getElementById("submitColumnInput");
+
+  addColumnBtn.addEventListener("click", () => {
+    const title = newColumnTitleInput.value.trim();
+
+    if (title) {
+      createColumn(title);
+      const modal = document.getElementById("formAdicionarColuna");
+      modal.style.display = "none";
+    } else {
+      alert("Por favor, insira um título para a coluna.");
+    }
+  });
+}
+
+async function createColumn(title) {
+    const columnName = title;
+
+    if (!columnName) {
+      alert("O nome da column não pode estar vazio!");
+      return;
+    }
+
+    const boardId = localStorage.getItem("boardId");
+
+    const columnData = {
+      Id: Date.now(),
+      BoardId: boardId,
+      Name: columnName || "",
+      Position: 0,
+      IsActive: true,
+      CreatedBy: 6,
+      UpdatedBy: 2,
+    };
+
+    try {
+      const response = await fetch(
+        "https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Column",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(columnData),
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Coluna criada com sucesso:", result);
+        fetchColunas(boardId);
+        return;
+      } else {
+        console.error("Erro ao criar a Coluna:", response.statusText);
+        alert("Erro ao criar a Coluna. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+      alert("Ocorreu um erro ao criar a Coluna. Verifique sua conexão.");
+    }
+}
+
+async function excluirColuna() {
+  const boardId = localStorage.getItem("boardId");
+  const columnId = localStorage.getItem("columnId");
+
+  const columnData = {
+    ColumnId: columnId,
+  };
+
+  fetch(
+    `https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Column?ColumnId=${columnId}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(columnData),
+    }
+  )
+    .then((data) => {
+      console.log("Coluna arquivado com sucesso:", data);
+      fetchColunas(boardId);
+    })
+    .catch((error) => {
+      console.error("Erro ao arquivar a coluna:", error);
+    });
 }
 
 async function carregarTasks(columnId, columnCards) {
@@ -443,8 +557,6 @@ async function carregarTasks(columnId, columnCards) {
       `Erro ao carregar as tasks para a coluna ${columnId}:`,
       error
     );
-    const tasksContainer = document.getElementById(`tasks-${columnId}`);
-    tasksContainer.innerHTML = "<p>Erro ao carregar as tasks</p>";
   }
 }
 
@@ -467,196 +579,11 @@ function excluirTasks() {
   )
     .then((data) => {
       console.log("Task deletada com sucesso:", data);
+      boardId = localStorage.getItem("boardId");
+      fetchColunas(boardId);
     })
     .catch((error) => {
-      console.error("Erro ao arquivar a coluna:", error);
-    });
-}
-
-function recuperarDados() {
-  const userData = localStorage.getItem("user");
-
-  if (userData) {
-    const user = JSON.parse(userData);
-    console.log(user);
-
-    const userNameElement = document.getElementById("nomeFulana");
-
-    const primeiroNome = user.nome.split(" ")[0];
-    userNameElement.innerHTML = `Olá, ${primeiroNome}!`;
-  } else {
-    userNameElement.innerHTML = "Bem vindo!";
-  }
-}
-
-function botaoCriarColuna() {
-  const addColumnBtn = document.getElementById("submitColumnButton");
-  const newColumnTitleInput = document.getElementById("submitColumnInput");
-
-  addColumnBtn.addEventListener("click", () => {
-    const title = newColumnTitleInput.value.trim();
-
-    if (title) {
-      criarColuna(title);
-    } else {
-      alert("Por favor, insira um título para a coluna.");
-    }
-  });
-}
-
-function adicionarColunaFunction() {
-  const modal = document.getElementById("formAdicionarColuna");
-  const openModalButton = document.getElementById("adicionarColuna");
-
-  openModalButton.addEventListener("click", () => {
-    modal.style.display = "flex";
-  });
-
-  window.addEventListener("click", (event) => {
-    if (event.target === modal) {
-      modal.style.display = "none";
-    }
-  });
-}
-
-function criarColuna(title) {
-  const columnSection = document.createElement("section");
-  columnSection.className = "column";
-
-  const excluirDiv = document.createElement("div");
-  excluirDiv.className = "excluir";
-
-  const columnTitle = document.createElement("h2");
-  columnTitle.className = "column__title";
-  columnTitle.textContent = title;
-  columnTitle.contentEditable = "true";
-  columnTitle.spellcheck = "false";
-
-  const excluirIcon = document.createElement("i");
-  excluirIcon.className = "bi bi-trash3-fill";
-  excluirIcon.addEventListener("click", () => {
-    const resposta = confirm("Tem certeza de que deseja excluir este item?");
-    if (resposta) {
-      excluirColuna();
-    }
-  });
-  excluirDiv.appendChild(columnTitle);
-  excluirDiv.appendChild(excluirIcon);
-
-  const addCardButton = document.createElement("button");
-  addCardButton.className = "add-card-btn";
-  addCardButton.textContent = "Nova tarefa";
-
-  const columnCards = document.createElement("section");
-  columnCards.className = "column__cards";
-
-  columnSection.appendChild(excluirDiv);
-  columnSection.appendChild(addCardButton);
-  columnSection.appendChild(columnCards);
-
-  const columnsSection = document.querySelector(".columns");
-  columnsSection.appendChild(columnSection);
-
-  const isDarkMode = document.body.classList.contains("dark");
-
-  if (isDarkMode) {
-    columnSection.classList.add("dark");
-    columnTitle.classList.add("dark");
-    excluirIcon.classList.add("dark");
-    addCardButton.classList.add("dark");
-    columnCards.classList.add("dark");
-  } else {
-    columnSection.classList.remove("dark");
-    columnTitle.classList.remove("dark");
-    excluirIcon.classList.remove("dark");
-    addCardButton.classList.remove("dark");
-    columnCards.classList.remove("dark");
-  }
-
-  addCardButton.addEventListener("click", () => createCard(columnCards));
-  addDragAndDropListenersToColumns(columnSection);
-}
-
-async function createColumn() {
-  const submitColumnButton = document.getElementById("submitColumnButton");
-  const submitColumnInput = document.getElementById("submitColumnInput");
-
-  submitColumnButton.addEventListener("click", async (event) => {
-    event.preventDefault();
-
-    const columnName = submitColumnInput.value.trim();
-
-    if (!columnName) {
-      alert("O nome da column não pode estar vazio!");
-      return;
-    }
-
-    const boardId = localStorage.getItem("boardId");
-
-    const columnData = {
-      Id: Date.now(),
-      BoardId: boardId,
-      Name: columnName || "",
-      Position: 0,
-      IsActive: true,
-      CreatedBy: 6,
-      UpdatedBy: 2,
-    };
-
-    try {
-      const response = await fetch(
-        "https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Column",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(columnData),
-        }
-      );
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Coluna criada com sucesso:", result);
-        alert("Coluna criada com sucesso!");
-      } else {
-        console.error("Erro ao criar a Coluna:", response.statusText);
-        alert("Erro ao criar a Coluna. Tente novamente.");
-      }
-    } catch (error) {
-      console.error("Erro na requisição:", error);
-      alert("Ocorreu um erro ao criar a Coluna. Verifique sua conexão.");
-    }
-  });
-}
-
-async function excluirColuna() {
-  const boardId = localStorage.getItem("boardId");
-  const columnId = localStorage.getItem("columnId");
-
-  const columnData = {
-    ColumnId: columnId,
-  };
-
-  fetch(
-    `https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Column?ColumnId=${columnId}`,
-    {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(columnData),
-    }
-  )
-    .then((data) => {
-      console.log("Coluna arquivado com sucesso:", data);
-      const boardName = localStorage.getItem("boardName");
-      const boardDescription = localStorage.getItem("boardDescription");
-      const columnsSection = document.querySelector(".columns");
-      carregarColunas(boardId, boardName, boardDescription, columnsSection);
-    })
-    .catch((error) => {
-      console.error("Erro ao arquivar a coluna:", error);
+      console.error("Erro ao excluir a task:", error);
     });
 }
 
@@ -925,7 +852,6 @@ botaoCriarColuna();
 recuperarDados();
 carregarDropdown();
 carregarTemas();
-createColumn();
 createBoard();
 createBoardButton();
 adicionarColunaFunction();

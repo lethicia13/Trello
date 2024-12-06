@@ -70,6 +70,8 @@ header {
   overflow-x: hidden;
   overflow-y: scroll;
   user-select: none;
+  margin-left: 10px;
+  min-width: 200px;
 }
 
 .dropdown-content a {
