@@ -86,6 +86,7 @@ function applyTheme(data) {
     "add-card-btn",
     "column__cards",
     "card",
+    "card-container",
     "card__title-input",
     "card__description-input",
     "add-column-btn",
@@ -159,7 +160,7 @@ function populateDropdown(data) {
     link.textContent = board.Name;
 
     link.addEventListener("click", () => {
-    fetchColunas(board.Id);
+      fetchColunas(board.Id);
     });
 
     listItem.appendChild(link);
@@ -367,7 +368,6 @@ async function carregarColunas(columnsData) {
     columnsSection.appendChild(columnSection);
     addDragAndDropListenersToColumns(columnSection);
 
-    
     await carregarTasks(column.Id, columnCards);
     columnSection.addEventListener("mouseover", () => {
       localStorage.setItem("columnId", column.Id);
@@ -412,50 +412,50 @@ function adicionarColunaFunction() {
 }
 
 async function createColumn(title) {
-    const columnName = title;
+  const columnName = title;
 
-    if (!columnName) {
-      alert("O nome da column não pode estar vazio!");
-      return;
-    }
+  if (!columnName) {
+    alert("O nome da column não pode estar vazio!");
+    return;
+  }
 
-    const boardId = localStorage.getItem("boardId");
+  const boardId = localStorage.getItem("boardId");
 
-    const columnData = {
-      Id: Date.now(),
-      BoardId: boardId,
-      Name: columnName || "",
-      Position: 0,
-      IsActive: true,
-      CreatedBy: 6,
-      UpdatedBy: 2,
-    };
+  const columnData = {
+    Id: Date.now(),
+    BoardId: boardId,
+    Name: columnName || "",
+    Position: 0,
+    IsActive: true,
+    CreatedBy: 6,
+    UpdatedBy: 2,
+  };
 
-    try {
-      const response = await fetch(
-        "https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Column",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(columnData),
-        }
-      );
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Coluna criada com sucesso:", result);
-        fetchColunas(boardId);
-        return;
-      } else {
-        console.error("Erro ao criar a Coluna:", response.statusText);
-        alert("Erro ao criar a Coluna. Tente novamente.");
+  try {
+    const response = await fetch(
+      "https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Column",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(columnData),
       }
-    } catch (error) {
-      console.error("Erro na requisição:", error);
-      alert("Ocorreu um erro ao criar a Coluna. Verifique sua conexão.");
+    );
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log("Coluna criada com sucesso:", result);
+      fetchColunas(boardId);
+      return;
+    } else {
+      console.error("Erro ao criar a Coluna:", response.statusText);
+      alert("Erro ao criar a Coluna. Tente novamente.");
     }
+  } catch (error) {
+    console.error("Erro na requisição:", error);
+    alert("Ocorreu um erro ao criar a Coluna. Verifique sua conexão.");
+  }
 }
 
 async function excluirColuna() {
@@ -485,6 +485,53 @@ async function excluirColuna() {
     });
 }
 
+function createCard(columnCards, columnId) {
+  const titleInput = document.createElement("textarea");
+  titleInput.className = "card__title-input";
+  titleInput.placeholder = "Digite o título aqui";
+  titleInput.spellcheck = "false";
+
+  const descriptionInput = document.createElement("textarea");
+  descriptionInput.className = "card__description-input";
+  descriptionInput.placeholder = "Digite a descrição aqui";
+  descriptionInput.spellcheck = "false";
+
+  const inputContainer = document.createElement("div");
+  inputContainer.className = "input-container";
+
+  inputContainer.appendChild(titleInput);
+  inputContainer.appendChild(descriptionInput);
+
+  const sendButton = document.createElement("button");
+  sendButton.textContent = "Criar Card";
+  sendButton.className = "add-card-btn";
+  inputContainer.appendChild(sendButton);
+
+  columnCards.appendChild(inputContainer);
+
+  const isDarkMode = document.body.classList.contains("dark");
+
+  if (isDarkMode) {
+    titleInput.classList.add("dark");
+    descriptionInput.classList.add("dark");
+    sendButton.classList.add("dark");
+  } else {
+    titleInput.classList.remove("dark");
+    descriptionInput.classList.remove("dark");
+    sendButton.classList.remove("dark");
+  }
+
+  titleInput.focus();
+
+  titleInput.addEventListener("blur", () => {
+    if (!titleInput.value.trim() && !descriptionInput.value.trim()) {
+      inputContainer.remove();
+    }
+  });
+
+  postCard(titleInput, descriptionInput, sendButton, columnId);
+}
+
 async function carregarTasks(columnId, columnCards) {
   try {
     const response = await fetch(
@@ -505,7 +552,6 @@ async function carregarTasks(columnId, columnCards) {
 
       taskContainer.addEventListener("mouseover", () => {
         localStorage.setItem("taskId", task.Id);
-        console.log(task.Id);
       });
 
       const taskDiv = document.createElement("div");
@@ -560,6 +606,51 @@ async function carregarTasks(columnId, columnCards) {
   }
 }
 
+function postCard(titleInput, descriptionInput, sendButton, columnId) {
+  sendButton.addEventListener("click", async (event) => {
+    event.preventDefault();
+
+    const taskName = titleInput.value.trim();
+    const taskDescription = descriptionInput.value.trim();
+
+    const taskData = {
+      Id: Date.now(),
+      ColumnId: columnId,
+      Title: taskName,
+      Description: taskDescription || " ",
+      IsActive: false,
+      CreatedBy: 6,
+      UpdatedBy: 2,
+    };
+
+    try {
+      const response = await fetch(
+        "https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Task",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(taskData),
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Tarefa criada com sucesso:", result);
+        const boardId = localStorage.getItem("boardId");
+        fetchColunas(boardId);
+      } else {
+        console.error("Erro ao criar a Tarefa:", response.statusText);
+        alert("Erro ao criar a Tarefa. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+      alert("Ocorreu um erro ao criar a Tarefa. Verifique sua conexão.");
+    }
+  });
+}
+
 function excluirTasks() {
   const taskId = localStorage.getItem("taskId");
 
@@ -585,177 +676,6 @@ function excluirTasks() {
     .catch((error) => {
       console.error("Erro ao excluir a task:", error);
     });
-}
-
-function createCard(columnCards, columnId) {
-  const titleInput = document.createElement("textarea");
-  titleInput.className = "card__title-input";
-  titleInput.placeholder = "Digite o título aqui";
-  titleInput.spellcheck = "false";
-
-  const descriptionInput = document.createElement("textarea");
-  descriptionInput.className = "card__description-input";
-  descriptionInput.placeholder = "Digite a descrição aqui";
-  descriptionInput.spellcheck = "false";
-
-  const inputContainer = document.createElement("div");
-  inputContainer.className = "input-container";
-
-  inputContainer.appendChild(titleInput);
-  inputContainer.appendChild(descriptionInput);
-
-  const sendButton = document.createElement("button");
-  sendButton.textContent = "Criar Card";
-  sendButton.className = "add-card-btn";
-  inputContainer.appendChild(sendButton);
-
-  columnCards.appendChild(inputContainer);
-
-  titleInput.addEventListener("blur", () => {
-    if (!titleInput.value.trim() && !descriptionInput.value.trim()) {
-      inputContainer.remove();
-    }
-  });
-
-  descriptionInput.addEventListener("blur", () => {
-    if (!titleInput.value.trim() && !descriptionInput.value.trim()) {
-      inputContainer.remove();
-    }
-  });
-
-  postCard(titleInput, descriptionInput, sendButton, columnId);
-
-  const isDarkMode = document.body.classList.contains("dark");
-
-  if (isDarkMode) {
-    titleInput.classList.add("dark");
-    descriptionInput.classList.add("dark");
-    sendButton.classList.add("dark");
-  } else {
-    titleInput.classList.remove("dark");
-    descriptionInput.classList.remove("dark");
-    sendButton.classList.remove("dark");
-  }
-
-  sendButton.addEventListener("click", () => {
-    const titleValue = titleInput.value.trim();
-    const descriptionValue = descriptionInput.value.trim();
-
-    if (titleValue || descriptionValue) {
-      const cardContainer = document.createElement("div");
-      cardContainer.className = "card-container";
-      cardContainer.draggable = true;
-      cardContainer.addEventListener("dragstart", dragStart);
-
-      const card = document.createElement("div");
-      card.className = "card";
-
-      const cardTitle = document.createElement("p");
-      cardTitle.className = "card__title";
-      cardTitle.textContent = titleValue || "Sem título";
-      cardTitle.spellcheck = "false";
-      cardTitle.contentEditable = "true";
-
-      const cardDescription = document.createElement("p");
-      cardDescription.className = "card__description";
-      cardDescription.textContent = descriptionValue || "Sem descrição";
-      cardDescription.spellcheck = "false";
-      cardDescription.contentEditable = "true";
-
-      const trashIcon = document.createElement("i");
-      trashIcon.className = "bi bi-trash3-fill";
-      trashIcon.title = "Excluir";
-
-      const isDarkMode = document.body.classList.contains("dark");
-
-      if (isDarkMode) {
-        trashIcon.classList.add("dark");
-        cardDescription.classList.add("dark");
-        cardContainer.classList.add("dark");
-        card.classList.add("dark");
-        cardTitle.classList.add("dark");
-        cardDescription.classList.add("dark");
-      } else {
-        trashIcon.classList.remove("dark");
-        cardDescription.classList.remove("dark");
-        cardContainer.classList.remove("dark");
-        card.classList.remove("dark");
-        cardTitle.classList.remove("dark");
-        cardDescription.classList.remove("dark");
-      }
-
-      trashIcon.addEventListener("click", () => {
-        const resposta = confirm(
-          "Tem certeza de que deseja excluir este item?"
-        );
-        if (resposta) {
-          cardContainer.remove();
-        }
-      });
-
-      card.appendChild(cardTitle);
-      card.appendChild(cardDescription);
-
-      cardContainer.appendChild(card);
-      cardContainer.appendChild(trashIcon);
-
-      columnCards.appendChild(cardContainer);
-    }
-
-    inputContainer.remove();
-    addDragAndDropListenersToCards(columnCards);
-  });
-
-  titleInput.focus();
-}
-
-function postCard(titleInput, descriptionInput, sendButton, columnId) {
-  sendButton.addEventListener("click", async (event) => {
-    event.preventDefault();
-
-    const taskName = titleInput.value.trim();
-    const taskDescription = descriptionInput.value.trim();
-
-    if (!taskName) {
-      alert("O nome da task não pode estar vazio!");
-      return;
-    }
-
-    const taskData = {
-      Id: Date.now(),
-      ColumnId: columnId,
-      Title: taskName,
-      Description: taskDescription || "",
-      IsActive: false,
-      CreatedBy: 6,
-      UpdatedBy: 2,
-    };
-
-    try {
-      const response = await fetch(
-        "https://personal-ga2xwx9j.outsystemscloud.com/TaskBoard_CS/rest/TaskBoard/Task",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(taskData),
-        }
-      );
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Tarefa criada com sucesso:", result);
-        alert("Tarefa criada com sucesso!");
-      } else {
-        console.error("Erro ao criar a Tarefa:", response.statusText);
-        alert("Erro ao criar a Tarefa. Tente novamente.");
-      }
-    } catch (error) {
-      console.error("Erro na requisição:", error);
-      alert("Ocorreu um erro ao criar a Tarefa. Verifique sua conexão.");
-    }
-  });
 }
 
 let draggedCard;
