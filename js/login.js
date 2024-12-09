@@ -37,7 +37,7 @@ loginForm.addEventListener("submit", async (event) => {
       email: userData.Email,
       nome: userData.Name,
     });
-    window.location.href = "/telas/taskBoard.html";
+    window.location.href = "telas/taskBoard.html";
   } catch (error) {
     showError(
       "Falha ao se conectar com o servidor. Tente novamente mais tarde"
